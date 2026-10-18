@@ -13,3 +13,17 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# 서명·로컬 설정
+keystore.properties
+*.jks
+*.keystore
+local.properties
+
+# tools 가상환경
+tools/.venv
+__pycache__/
+
+# 모든 모듈 빌드 산출물
+build/
+.kotlin/

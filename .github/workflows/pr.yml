@@ -1,0 +1,49 @@
+name: PR
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 정적 분석
+        run: ./gradlew ktlintCheck detekt lint
+
+      - name: 엔진 단위·속성 테스트
+        run: ./gradlew :core:engine:test
+
+      - name: 나머지 단위 테스트
+        run: ./gradlew testDebugUnitTest
+
+      - name: 스크린샷 회귀
+        run: ./gradlew verifyRoborazziDebug
+
+      - name: 디버그 빌드
+        run: ./gradlew assembleDebug
+
+      - name: 리포트 보관
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/outputs/roborazzi/
+          if-no-files-found: ignore

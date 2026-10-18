@@ -1,0 +1,7 @@
+# 앱 실행만 확인
+appId: com.gsw.yeonhyugak.debug
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "yh_root"
