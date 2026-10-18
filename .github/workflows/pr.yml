@@ -23,6 +23,15 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: tools 테스트
+        run: |
+          pip install -r tools/requirements.txt
+          python -m pytest -c tools/pytest.ini tools/tests
+
       - name: 정적 분석
         run: ./gradlew ktlintCheck detekt lint
 

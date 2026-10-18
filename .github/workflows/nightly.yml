@@ -9,6 +9,9 @@ jobs:
   holiday-sync:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
 
@@ -19,11 +22,26 @@ jobs:
       - name: 의존성 설치
         run: pip install -r tools/requirements.txt
 
-      # TODO(Phase 1): tools/holiday_sync.py 로 번들과 비교, 차이 있으면 이슈 생성
+      # 종료 코드 0 동일 · 1 차이 있음 · 2 설정/네트워크 오류
       - name: 공휴일 동기화
+        id: sync
         env:
-          HOLIDAY_API_KEY: ${{ secrets.HOLIDAY_API_KEY }}
-        run: echo "TODO: holiday_sync (Phase 1)"
+          KASI_SERVICE_KEY: ${{ secrets.KASI_SERVICE_KEY }}
+        run: |
+          set +e
+          python tools/holiday_sync/holiday_sync.py > sync.md
+          code=$?
+          cat sync.md
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -eq 2 ]; then exit 1; fi
+          exit 0
+
+      - name: 차이 있으면 이슈 생성
+        if: steps.sync.outputs.code == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create             --title "공휴일 데이터 변경 감지 $(date +%Y-%m-%d)"             --body-file sync.md
 
   e2e:
     runs-on: ubuntu-latest
