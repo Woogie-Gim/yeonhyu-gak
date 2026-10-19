@@ -1,0 +1,90 @@
+<resources>
+    <!-- 상단 -->
+    <string name="cal_title_month">%1$d년 %2$d월</string>
+    <string name="cal_title_month_picker">%1$d년 %2$d월 ▾</string>
+    <string name="cal_title_hint">연도 바꾸기</string>
+    <string name="cal_badge_expected">예상</string>
+    <string name="cal_expected_note">아직 발표 전이라 예상한 공휴일이에요</string>
+    <string name="cal_today">오늘</string>
+    <string name="cal_year_picker_title">연도 고르기</string>
+    <string name="cal_year_item">%1$d년</string>
+    <string name="cal_year_item_expected">%1$d년 · 예상</string>
+
+    <!-- 요일. 일요일부터 -->
+    <string-array name="cal_weekday_short">
+        <item>일</item>
+        <item>월</item>
+        <item>화</item>
+        <item>수</item>
+        <item>목</item>
+        <item>금</item>
+        <item>토</item>
+    </string-array>
+    <string-array name="cal_weekday_full">
+        <item>일요일</item>
+        <item>월요일</item>
+        <item>화요일</item>
+        <item>수요일</item>
+        <item>목요일</item>
+        <item>금요일</item>
+        <item>토요일</item>
+    </string-array>
+
+    <!-- 칸 -->
+    <string name="cal_band_days">%1$d일</string>
+    <string name="cal_holiday_short_substitute">대체</string>
+    <string name="cal_holiday_short_election">선거</string>
+    <string name="cal_holiday_short_temporary">임시</string>
+
+    <!-- 말풍선 -->
+    <string name="cal_bubble_range">연차 %1$s일 → %2$d일 휴가</string>
+    <string name="cal_bubble_range_over">연차 %1$s일 → %2$d일 휴가 · %3$s일 초과</string>
+    <string name="cal_bubble_weekend">쉬는 날이라 연차가 필요 없어요</string>
+    <string name="cal_bubble_anchor">%1$s부터 선택했어요. 끝 날짜에서 \'여기까지 선택\'을 골라 주세요</string>
+
+    <!-- 코치마크 -->
+    <string name="cal_coach">꾹 누른 채 밀면 여러 날을 한 번에 지정해요</string>
+    <string name="cal_coach_ok">알겠어요</string>
+
+    <!-- 시트 -->
+    <string name="cal_date_full">%1$d월 %2$d일 %3$s</string>
+    <string name="cal_sheet_full">연차</string>
+    <string name="cal_sheet_am">오전 반차</string>
+    <string name="cal_sheet_pm">오후 반차</string>
+    <string name="cal_sheet_clear">지정 해제</string>
+    <string name="cal_sheet_memo_label">메모</string>
+    <string name="cal_sheet_memo_hint">이날 기억할 일을 적어 두세요</string>
+    <string name="cal_sheet_memo_save">메모 저장</string>
+    <string name="cal_sheet_memo_delete">메모 지우기</string>
+    <string name="cal_sheet_memo_private">메모는 달력에 점으로만 보여요</string>
+    <string name="cal_range_from">여기부터 선택</string>
+    <string name="cal_range_to">여기까지 선택</string>
+
+    <!-- 스낵바 -->
+    <string name="cal_undo">되돌리기</string>
+    <string name="cal_done_full">연차를 지정했어요</string>
+    <string name="cal_done_am">오전 반차를 지정했어요</string>
+    <string name="cal_done_pm">오후 반차를 지정했어요</string>
+    <string name="cal_done_clear">지정을 해제했어요</string>
+    <string name="cal_done_range">연차 %1$s일을 지정했어요</string>
+    <string name="cal_done_range_none">이 구간은 이미 쉬는 날이에요</string>
+    <string name="cal_done_memo_save">메모를 저장했어요</string>
+    <string name="cal_done_memo_delete">메모를 지웠어요</string>
+
+    <!-- TalkBack -->
+    <string name="cal_a11y_workday">근무일</string>
+    <string name="cal_a11y_holiday">공휴일 %1$s</string>
+    <string name="cal_a11y_expected_holiday">예상 공휴일 %1$s</string>
+    <string name="cal_a11y_weekend">쉬는 날</string>
+    <string name="cal_a11y_full">연차</string>
+    <string name="cal_a11y_am">오전 반차</string>
+    <string name="cal_a11y_pm">오후 반차</string>
+    <string name="cal_a11y_memo">메모 있음</string>
+    <string name="cal_a11y_today">오늘</string>
+    <string name="cal_a11y_band">%1$d일 연휴</string>
+    <string name="cal_a11y_selected">선택 중</string>
+    <string name="cal_a11y_action_mark">연차 지정</string>
+    <string name="cal_a11y_action_clear">연차 해제</string>
+    <string name="cal_a11y_action_name">공휴일 이름 듣기</string>
+    <string name="cal_a11y_action_options">연차·반차·메모 열기</string>
+</resources>

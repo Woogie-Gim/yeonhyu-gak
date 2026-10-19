@@ -1,0 +1,20 @@
+# 달력: 날짜 드래그로 범위 지정 → 되돌리기
+appId: com.gsw.yeonhyugak.debug
+---
+- launchApp:
+    clearState: true
+- runScript: scripts/pick_week.js
+- assertVisible:
+    id: ${output.startCell}
+# 일요일에서 오른쪽으로 천천히 끌기 (주말 포함, 근무일만 차감)
+# Maestro swipe는 멈춤 없이 바로 움직인다. 첫 200ms 이동이 터치 슬롭 안에 있도록 아주 느리게
+- swipe:
+    from:
+      id: ${output.startCell}
+    direction: RIGHT
+    duration: 12000
+- assertVisible: "연차 .*일을 지정했어요"
+# 공휴일이 끼어도 되도록 "연차가 지정된 칸이 하나 이상"으로 확인
+- assertVisible: ".* · 연차( · .*)?"
+- tapOn: "되돌리기"
+- assertNotVisible: ".* · 연차( · .*)?"

@@ -1,4 +1,4 @@
-package com.gsw.yeonhyugak.ui.theme
+package com.gsw.yeonhyugak.core.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

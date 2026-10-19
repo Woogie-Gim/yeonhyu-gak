@@ -52,6 +52,7 @@ android {
 dependencies {
     implementation(project(":core:engine"))
     implementation(project(":core:data"))
+    implementation(project(":core:ui"))
     implementation(project(":feature:calendar"))
     implementation(project(":feature:recommend"))
     implementation(project(":feature:leave"))
@@ -71,5 +72,7 @@ dependencies {
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.room.runtime)
+    testImplementation(libs.datastore.preferences)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

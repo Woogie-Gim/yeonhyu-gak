@@ -4,9 +4,16 @@
 
 | 등록 | 항목 | 이유·메모 | 대상 단계 |
 |---|---|---|---|
-| Phase 0 | 테마 토큰(`YhTheme`) 모듈 위치 결정 | 지금은 `:app/ui/theme`에 있음. feature 모듈이 토큰을 쓰려면 공용 모듈(예: `:core:ui`)이 필요. SPEC 모듈 목록에 없어 추가 전 확인 필요 | Phase 2 시작 전 |
+| Phase 0 | ~~테마 토큰(`YhTheme`) 모듈 위치 결정~~ | 해결(Phase 2): `:core:ui` 신설, CLAUDE.md 모듈 목록 반영 | — |
 | Phase 0 | 기본 노트 다크 토큰 확정 | 현재 임시값. 대비 4.5:1 테스트로 확정 | Phase 4 |
 | Phase 0 | 템플릿 시절 오래된 의존성 버전 갱신 | core-ktx 1.10.1 · activity-compose 1.8.0 · lifecycle 2.6.1 | 별도 정리 |
 | Phase 0 | AGP 9 `optimization {}` DSL 전환 | `android.r8.gradual.support` 실험 플래그 필요해 `isMinifyEnabled` 유지 | AGP 안정화 후 |
-| Phase 1 | 공휴일 표시 이름 화면 연결 | `HolidayLabels.displayName`(`:core:data`)을 달력·추천 화면에서 사용 | Phase 2 |
-| Phase 1 | 예상 연도 대체공휴일 이름 형식 | 예상 계산은 `대체공휴일`, KASI 2026+는 `대체공휴일(원래 이름)`. 날짜·종류는 같음. 표시 형식 통일 여부 결정 | Phase 2 |
+| Phase 1 | ~~공휴일 표시 이름 화면 연결~~ | 해결(Phase 2): 달력 칸·툴팁·시트·TalkBack에 연결. 추천 화면은 Phase 3에서 같은 함수 사용 | — |
+| Phase 1 | 예상 연도 대체공휴일 이름 형식 | 칸에서는 해소(둘 다 `대체`로 축약). 툴팁·시트는 원문 기반 표시 이름 유지(`대체공휴일` / `대체공휴일(원래 이름)`) | 필요 시 |
+| Phase 2 | 원격으로 새로 추가된 날 표시 모양 | 작은 점은 메모 전용으로 정함. 새 공휴일 표시는 점이 아닌 `N` 배지 등 다른 모양으로 하고 SPEC 3장 표 문구 갱신 | Phase 5 |
+| Phase 2 | 공유 카드에서 메모 기본 제외 | 메모는 `day_memo` 테이블로 분리 저장됨. 공유 카드는 `LeaveRepository`만 읽고, 메모 포함은 별도 토글(기본 끔) | Phase 5 |
+| Phase 2 | 효과음(mark·page) 연결 | 탭·월 넘김 효과음 자리는 비워 둠. 햅틱만 연결 | Phase 4 |
+| Phase 2 | 상단 설정(톱니) 아이콘 | 설정 화면이 없어 누를 곳 없는 버튼을 두지 않음 | Phase 6 |
+| Phase 2 | 근무 요일·회사 휴무일 반영 | 달력은 월~금 기본값으로 계산. 설정 값 연결은 설정 화면과 함께 | Phase 6 |
+| Phase 2 | 기본 노트 accent 위 흰 글자 대비 | #3A86FF 위 #FFFFFF ≈ 3.7:1. 연차 칸 숫자가 4.5:1 미만. 대비 테스트에서 조정 | Phase 4 |
+| Phase 2 | 320dp 이하 화면 칸 너비 | 칸 높이는 52dp 이상 유지, 너비는 화면/7이라 336dp 미만에서 48dp 아래로 내려감 | Phase 7 |

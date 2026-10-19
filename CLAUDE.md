@@ -18,7 +18,7 @@
 
 ## 기술 스택
 - Kotlin · Jetpack Compose · Material 3 · minSdk 26 · targetSdk 최신
-- 모듈: `:core:engine`(순수 Kotlin, 안드로이드 의존 금지) · `:core:data` · `:feature:*` · `:app`
+- 모듈: `:core:engine`(순수 Kotlin, 안드로이드 의존 금지) · `:core:data` · `:core:ui`(테마 토큰·공용 UI) · `:feature:*` · `:app`
 - 저장: Room(연차 기록) + DataStore(설정·테마)
 - 위젯: Glance · 알림: WorkManager · 광고: AdMob + UMP
 - DI: Hilt · 비동기: Coroutines/Flow

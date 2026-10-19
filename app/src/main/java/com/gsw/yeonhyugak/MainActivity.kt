@@ -4,8 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.gsw.yeonhyugak.core.ui.theme.YhTheme
+import com.gsw.yeonhyugak.feature.calendar.CalendarRoute
 import com.gsw.yeonhyugak.ui.YhApp
-import com.gsw.yeonhyugak.ui.theme.YhTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -15,7 +16,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             YhTheme {
-                YhApp()
+                YhApp(calendar = { CalendarRoute(snackbarHostState = it) })
             }
         }
     }

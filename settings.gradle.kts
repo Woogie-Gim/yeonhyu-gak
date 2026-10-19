@@ -27,6 +27,7 @@ rootProject.name = "YeonhyuGak"
 include(":app")
 include(":core:engine")
 include(":core:data")
+include(":core:ui")
 include(":feature:calendar")
 include(":feature:recommend")
 include(":feature:leave")

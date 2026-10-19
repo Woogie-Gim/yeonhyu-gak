@@ -3,7 +3,7 @@
 사전 준비 (직접 설치 · 프롬프트 아님)
 - Android Studio 최신 버전 (JDK 내장) · SDK Manager에서 최신 플랫폼 + 에뮬레이터 이미지 1개
 - Python 3.11 이상 (tools 스크립트용)
-- Maestro (Windows는 WSL 안에서 설치)
+- Maestro (Windows에 직접 설치 · Git Bash에서 `maestro test .maestro/`)
 - Git · GitHub 저장소 yeonhyu-gak (private 권장)
 
 사용법

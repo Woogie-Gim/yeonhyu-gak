@@ -1,5 +1,6 @@
 package com.gsw.yeonhyugak.core.engine.property
 
+import com.gsw.yeonhyugak.core.engine.calendar.RangeSelection
 import com.gsw.yeonhyugak.core.engine.holiday.ExpectedHolidayGenerator
 import com.gsw.yeonhyugak.core.engine.holiday.HolidayKind
 import com.gsw.yeonhyugak.core.engine.leave.AccrualResult
@@ -14,13 +15,15 @@ import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.enum
+import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 
-// SPEC 13장 엔진 불변식. 각 1,000회
+// SPEC 13장 엔진 불변식 + 달력 구간 불변식. 각 1,000회
 class EngineInvariantsTest :
     FunSpec({
         val planner =
@@ -118,6 +121,18 @@ class EngineInvariantsTest :
                     r.entitlementOn(on) shouldBeGreaterThanOrEqual 0.0
                     r.entitlementOn(on) shouldBeLessThanOrEqual 25.0
                 }
+            }
+        }
+
+        test("9. 달력에 그은 구간의 차감일은 전부 근무일, 총 일수 ≥ 구간 길이") {
+            checkAll(n, Generators.planInput, Arb.int(0..20)) { (year, cal, _), len ->
+                val start = LocalDate.of(year, 3, 1)
+                val end = start.plusDays(len.toLong())
+                val s = RangeSelection.summarize(start, end, cal, emptyMap(), 15.0)
+                s.leaveDates.all(cal::isWorkday) shouldBe true
+                s.leaveDates.all { it in start..end } shouldBe true
+                s.totalDays shouldBeGreaterThanOrEqual len + 1
+                s.overBy shouldBeLessThanOrEqual s.cost
             }
         }
     })

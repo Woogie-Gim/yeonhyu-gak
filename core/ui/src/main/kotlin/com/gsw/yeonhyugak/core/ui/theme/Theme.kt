@@ -1,4 +1,4 @@
-package com.gsw.yeonhyugak.ui.theme
+package com.gsw.yeonhyugak.core.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +31,15 @@ fun YhTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () 
         onBackground = colors.ink,
         surface = colors.background,
         onSurface = colors.ink,
+        surfaceContainerLow = colors.background,
+        surfaceContainer = colors.background,
+        surfaceContainerHigh = colors.background,
+        secondaryContainer = colors.outline,
+        onSecondaryContainer = colors.ink,
+        onSurfaceVariant = colors.muted,
+        outline = colors.outline,
+        inverseSurface = colors.ink,
+        inverseOnSurface = colors.background,
     )
     CompositionLocalProvider(LocalYhColors provides colors) {
         MaterialTheme(
