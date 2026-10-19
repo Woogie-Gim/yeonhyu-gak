@@ -16,6 +16,7 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -95,6 +96,15 @@ class CalendarScreenTest {
         rule.waitUntil(TIMEOUT) { harness.leaveMap().size == 3 }
         rule.onNodeWithText("되돌리기").performClick()
         rule.waitUntil(TIMEOUT) { harness.leaveMap().isEmpty() }
+    }
+
+    // 말풍선이 비어 있을 때 제목과 요일 줄 사이에 빈 공간을 두지 않는다
+    @Test
+    fun titleToWeekday_gapIsSmall() {
+        val title = rule.onNodeWithTag(CALENDAR_TITLE_TAG).getBoundsInRoot()
+        val weekday = rule.onNodeWithTag(CALENDAR_WEEKDAY_TAG).getBoundsInRoot()
+        val gap = weekday.top - title.bottom
+        assertTrue("제목~요일 간격 $gap", gap.value <= MAX_HEADER_GAP_DP)
     }
 
     @Test
@@ -254,5 +264,6 @@ class CalendarScreenTest {
     private companion object {
         const val TIMEOUT = 5_000L
         const val MIN_TOUCH_DP = 48f
+        const val MAX_HEADER_GAP_DP = 8f
     }
 }

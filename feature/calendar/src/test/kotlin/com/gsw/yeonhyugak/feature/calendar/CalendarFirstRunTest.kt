@@ -22,16 +22,19 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.gsw.yeonhyugak.core.engine.leave.LeaveType
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
 import com.gsw.yeonhyugak.feature.calendar.CalendarHarness.Companion.may
+import java.time.LocalDate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
-// 첫 진입 코치마크 · 메모 되돌리기 · 초과 경고
+// 첫 진입 코치마크(첫 성공 시 닫힘) · 메모 되돌리기 · 초과 경고
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [36], application = Application::class, qualifiers = "w360dp-h740dp-xhdpi")
 class CalendarFirstRunTest {
@@ -66,6 +69,66 @@ class CalendarFirstRunTest {
         rule.onNodeWithText("알겠어요").performClick()
         rule.waitUntil(TIMEOUT) { !exists(hasTestTag(CALENDAR_COACH_TAG)) }
         assertTrue(runBlocking { harness.prefs.coachMarkShown.first() })
+    }
+
+    // 첫 성공 동작이면 코치마크는 할 일을 다 한 것
+    @Test
+    fun coachMark_closesAfterFirstTap() {
+        launch()
+        rule.onNodeWithTag(cellTag(may(7))).performClick()
+        rule.waitUntil(TIMEOUT) { harness.leaveMap().isNotEmpty() }
+        assertCoachGoneForGood()
+    }
+
+    @Test
+    fun coachMark_closesAfterFirstDrag() {
+        launch()
+        drag(may(18), may(20))
+        rule.waitUntil(TIMEOUT) { harness.leaveMap().size == 3 }
+        assertCoachGoneForGood()
+    }
+
+    // 닫혀도 자리는 이번 화면에서 유지. 손가락 아래 칸이 움직이지 않는다
+    @Test
+    fun coachMark_closing_doesNotMoveGrid() {
+        launch()
+        val before = rule.onNodeWithTag(cellTag(may(7))).fetchSemanticsNode().boundsInRoot
+        rule.onNodeWithTag(cellTag(may(7))).performClick()
+        assertCoachGoneForGood()
+        rule.waitForIdle()
+        val after = rule.onNodeWithTag(cellTag(may(7))).fetchSemanticsNode().boundsInRoot
+        assertEquals(before, after)
+    }
+
+    // 공휴일 탭은 지정이 아니므로 그대로 둔다
+    @Test
+    fun coachMark_staysAfterHolidayTap() {
+        launch()
+        rule.onNodeWithTag(cellTag(may(5))).performClick()
+        rule.waitUntil(TIMEOUT) { exists(hasText("어린이날")) }
+        rule.waitForIdle()
+        assertTrue(exists(hasTestTag(CALENDAR_COACH_TAG)))
+        assertFalse(runBlocking { harness.prefs.coachMarkShown.first() })
+    }
+
+    private fun assertCoachGoneForGood() {
+        rule.waitUntil(TIMEOUT) { !exists(hasTestTag(CALENDAR_COACH_TAG)) }
+        assertTrue(runBlocking { harness.prefs.coachMarkShown.first() })
+    }
+
+    private fun drag(from: LocalDate, to: LocalDate) {
+        val grid = rule.onNodeWithTag(CALENDAR_GRID_TAG).fetchSemanticsNode().boundsInRoot
+        fun center(date: LocalDate) =
+            rule.onNodeWithTag(cellTag(date)).fetchSemanticsNode().boundsInRoot.center -
+                grid.topLeft
+        val a = center(from)
+        val b = center(to)
+        rule.onNodeWithTag(CALENDAR_GRID_TAG).performTouchInput {
+            down(a)
+            advanceEventTime(LONG_PRESS_MS + 100)
+            moveTo(b)
+            up()
+        }
     }
 
     @Test

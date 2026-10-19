@@ -32,7 +32,8 @@ internal val NoteLightColors = YhColors(
     onAccent = Color(0xFFFFFFFF),
     warning = Color(0xFFB54708),
     onWarning = Color(0xFFFFFFFF),
-    blockBand = Color(0xFF9DC0FF),
+    // 흰 배경 대비 5.0:1
+    blockBand = Color(0xFF2E6BD6),
     memoDot = Color(0xFF5B6475),
 )
 
@@ -48,6 +49,7 @@ internal val NoteDarkColors = YhColors(
     onAccent = Color(0xFF0B1220),
     warning = Color(0xFFFFB366),
     onWarning = Color(0xFF1F1300),
-    blockBand = Color(0xFF3E5F99),
+    // 배경 대비 5.5:1
+    blockBand = Color(0xFF5B8FE0),
     memoDot = Color(0xFFA3ACBB),
 )

@@ -117,7 +117,7 @@ class CalendarViewModel @Inject constructor(
         when (LeaveToggle.onTap(date, s.work, s.leaves)) {
             is TapResult.Marked -> {
                 editor.mark(listOf(date), LeaveType.FULL)
-                changed(doneMessage(LeaveType.FULL))
+                changed(doneMessage(LeaveType.FULL), marked = true)
             }
 
             is TapResult.Cleared -> {
@@ -149,7 +149,10 @@ class CalendarViewModel @Inject constructor(
             )
         } else {
             editor.mark(summary.leaveDates, LeaveType.FULL)
-            changed(UiMessage(R.string.cal_done_range, listOf(DayCount.format(summary.cost))))
+            changed(
+                UiMessage(R.string.cal_done_range, listOf(DayCount.format(summary.cost))),
+                marked = true,
+            )
         }
     }
 
@@ -157,7 +160,7 @@ class CalendarViewModel @Inject constructor(
     fun setLeave(date: LocalDate, type: LeaveType?) = launch {
         closeSheet()
         if (type == null) editor.clear(date) else editor.mark(listOf(date), type)
-        changed(doneMessage(type))
+        changed(doneMessage(type), marked = type != null)
     }
 
     fun openSheet(date: LocalDate) = launch {
@@ -194,7 +197,11 @@ class CalendarViewModel @Inject constructor(
 
     fun undo() = launch { editor.undo() }
 
-    private suspend fun changed(message: UiMessage) = events.send(CalendarEvent.Changed(message))
+    // 첫 지정에 성공하면 코치마크를 닫고 다시 띄우지 않는다
+    private suspend fun changed(message: UiMessage, marked: Boolean = false) {
+        if (marked && state.value.coachMarkVisible) prefs.markCoachMarkShown()
+        events.send(CalendarEvent.Changed(message))
+    }
 
     private data class LocalState(val anchor: LocalDate? = null, val sheet: DaySheetState? = null)
 

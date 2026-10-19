@@ -78,6 +78,28 @@ class MonthGridTest :
             grid(YearMonth.of(2026, 4), leaves).bandAt(d(4, 30)).labelHere shouldBe true
         }
 
+        test("토요일에서 일요일로 넘어가는 띠는 이어짐 표시") {
+            val g = grid(YearMonth.of(2026, 5))
+            g.bandAt(d(5, 1)).let {
+                it.continuesPrev shouldBe false
+                it.continuesNext shouldBe false
+            }
+            g.bandAt(d(5, 2)).continuesNext shouldBe true
+            g.bandAt(d(5, 3)).let {
+                it.continuesPrev shouldBe true
+                it.continuesNext shouldBe false
+            }
+        }
+
+        test("달 경계를 넘는 띠도 이어짐 표시") {
+            val leaves = mapOf(d(4, 30) to LeaveType.FULL)
+            grid(YearMonth.of(2026, 5), leaves).bandAt(d(5, 1)).continuesPrev shouldBe true
+            grid(YearMonth.of(2026, 4), leaves).bandAt(d(4, 30)).let {
+                it.continuesNext shouldBe true
+                it.continuesPrev shouldBe false
+            }
+        }
+
         test("지정 기록이 셀에 반영") {
             val cell = grid(YearMonth.of(2026, 5), mapOf(d(5, 7) to LeaveType.PM_HALF)).at(d(5, 7))
             cell.leave shouldBe LeaveType.PM_HALF

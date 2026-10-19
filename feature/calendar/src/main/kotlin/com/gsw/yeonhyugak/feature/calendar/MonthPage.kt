@@ -25,6 +25,7 @@ import com.gsw.yeonhyugak.core.ui.theme.YhTheme
 import java.time.LocalDate
 
 const val CALENDAR_GRID_TAG = "cal_grid"
+const val CALENDAR_WEEKDAY_TAG = "cal_weekday"
 
 fun cellTag(date: LocalDate): String = "cal_cell_$date"
 
@@ -43,7 +44,13 @@ internal data class GridCallbacks(
 internal fun WeekdayHeader(modifier: Modifier = Modifier) {
     val colors = YhTheme.colors
     val names = stringArrayResource(R.array.cal_weekday_short)
-    Row(modifier.fillMaxWidth().heightIn(min = 28.dp).clearAndSetSemantics { }) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .heightIn(min = 28.dp)
+            .testTag(CALENDAR_WEEKDAY_TAG)
+            .clearAndSetSemantics { },
+    ) {
         names.forEachIndexed { i, name ->
             Text(
                 text = name,

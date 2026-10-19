@@ -11,11 +11,14 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 // 연휴 띠 조각. labelHere = 이 칸에 `n일` 라벨
+// continuesPrev/Next = 띠가 윗줄·지난달에서 오거나 다음 줄·다음 달로 이어짐
 data class BlockBand(
     val length: Int,
     val isStart: Boolean,
     val isEnd: Boolean,
     val labelHere: Boolean,
+    val continuesPrev: Boolean,
+    val continuesNext: Boolean,
 )
 
 data class DayCell(
@@ -75,11 +78,18 @@ data class MonthGrid(val month: YearMonth, val weeks: List<List<DayCell>>) {
                 run?.let { ChronoUnit.DAYS.between(it.start, it.endInclusive).toInt() + 1 } ?: 0
             // 블록이 지난달에 시작했으면 이달 첫 칸에 라벨
             return run?.takeIf { length >= MIN_BLOCK_DAYS }?.let {
+                val isStart = date == it.start
+                val isEnd = date == it.endInclusive
                 BlockBand(
                     length = length,
-                    isStart = date == it.start,
-                    isEnd = date == it.endInclusive,
+                    isStart = isStart,
+                    isEnd = isEnd,
                     labelHere = date == maxOf(it.start, month.atDay(1)),
+                    // 줄 끝(토)·달 끝에서 끊기는 조각
+                    continuesPrev = !isStart &&
+                        (date.dayOfWeek == DayOfWeek.SUNDAY || date == month.atDay(1)),
+                    continuesNext = !isEnd &&
+                        (date.dayOfWeek == DayOfWeek.SATURDAY || date == month.atEndOfMonth()),
                 )
             }
         }

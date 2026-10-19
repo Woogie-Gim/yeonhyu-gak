@@ -3,7 +3,6 @@ package com.gsw.yeonhyugak.feature.calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -225,17 +224,20 @@ private fun CalendarScreen(
     val callbacks = rememberGridCallbacks(state, viewModel, drag)
 
     Column(modifier.fillMaxSize()) {
-        TopBar(
-            month = month,
-            expected = state.isExpected(month.year),
-            onTitle = { yearPickerOpen = true },
-            onExpected = onShowExpectedTip,
-            onToday = { goTo(YearMonth.from(state.today)) },
-        )
-        Bubble(
-            text = bubbleText(summary, state.rangeAnchor, tip),
-            warning = summary?.isOver == true,
-        )
+        // 말풍선은 제목 위에 띄운다. 자리를 차지하지 않아 달력이 밀리지 않음
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            TopBar(
+                month = month,
+                expected = state.isExpected(month.year),
+                onTitle = { yearPickerOpen = true },
+                onExpected = onShowExpectedTip,
+                onToday = { goTo(YearMonth.from(state.today)) },
+            )
+            Bubble(
+                text = bubbleText(summary, state.rangeAnchor, tip),
+                warning = summary?.isOver == true,
+            )
+        }
         WeekdayHeader()
         if (state.isLoaded) {
             HorizontalPager(
@@ -252,7 +254,7 @@ private fun CalendarScreen(
                 )
             }
         }
-        if (state.coachMarkVisible) CoachMark(onDismiss = viewModel::dismissCoachMark)
+        CoachMarkSlot(visible = state.coachMarkVisible, onDismiss = viewModel::dismissCoachMark)
     }
 
     DaySheetHost(state, viewModel)
@@ -360,7 +362,7 @@ private fun TopBar(
     val colors = YhTheme.colors
     val title = stringResource(R.string.cal_title_month, month.year, month.monthValue)
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = 8.dp).heightIn(min = 56.dp),
+        Modifier.fillMaxWidth().padding(horizontal = 8.dp).heightIn(min = 48.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -440,7 +442,7 @@ private fun bubbleText(summary: RangeSummary?, anchor: LocalDate?, tip: Tip?): S
 private fun Bubble(text: String?, warning: Boolean) {
     val colors = YhTheme.colors
     Box(
-        Modifier.fillMaxWidth().heightIn(min = 36.dp).padding(horizontal = 16.dp, vertical = 2.dp),
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
         if (text != null) {
@@ -457,31 +459,6 @@ private fun Bubble(text: String?, warning: Boolean) {
                     .semantics { liveRegion = LiveRegionMode.Polite }
                     .testTag(CALENDAR_BUBBLE_TAG),
             )
-        }
-    }
-}
-
-// 첫 진입 1회. 하단에 두어 달력을 가리지 않는다
-@Composable
-private fun CoachMark(onDismiss: () -> Unit) {
-    val colors = YhTheme.colors
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .border(1.dp, colors.outline, RoundedCornerShape(12.dp))
-            .padding(start = 16.dp, end = 4.dp)
-            .testTag(CALENDAR_COACH_TAG),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(
-            stringResource(R.string.cal_coach),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f).padding(vertical = 8.dp),
-        )
-        TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = 48.dp)) {
-            Text(stringResource(R.string.cal_coach_ok))
         }
     }
 }
