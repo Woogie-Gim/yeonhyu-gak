@@ -46,6 +46,27 @@ class ExpectedHolidayGeneratorTest :
             hs.all { !it.confirmed && it.source == HolidaySource.EXPECTED } shouldBe true
         }
 
+        test("노동절·제헌절은 2026년부터 (2025 없음 · 2026 고정 공휴일 10개)") {
+            val names2025 = ExpectedHolidayGenerator.generate(2025, KnownLunarDates.Y2025).map {
+                it.name
+            }
+            (HolidayKey.LABOR.kasiName in names2025) shouldBe false
+            (HolidayKey.CONSTITUTION.kasiName in names2025) shouldBe false
+            val hs = ExpectedHolidayGenerator.generate(2026, KnownLunarDates.Y2026)
+            hs.count { it.kind == HolidayKind.NATIONAL } shouldBe 10
+            datesNamed(2026, KnownLunarDates.Y2026, "노동절") shouldContainExactly
+                listOf(LocalDate.of(2026, 5, 1))
+            datesNamed(2026, KnownLunarDates.Y2026, "제헌절") shouldContainExactly
+                listOf(LocalDate.of(2026, 7, 17))
+        }
+
+        test("고정 공휴일 규칙의 적용 시작 연도") {
+            val since = ExpectedHolidayGenerator.FIXED.associate { it.key to it.sinceYear }
+            since[HolidayKey.LABOR] shouldBe 2026
+            since[HolidayKey.CONSTITUTION] shouldBe 2026
+            since[HolidayKey.CHRISTMAS] shouldBe null
+        }
+
         test("선거일·임시공휴일은 계산하지 않음") {
             ExpectedHolidayGenerator
                 .generate(2025, KnownLunarDates.Y2025)

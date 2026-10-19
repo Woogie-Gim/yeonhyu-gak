@@ -1,6 +1,6 @@
 """특일정보 · 음양력정보 API 클라이언트.
 
-인증키는 환경 변수 KASI_SERVICE_KEY(Decoding 키)에서만 읽는다.
+인증키는 환경 변수 KASI_SERVICE_KEY(URL 디코딩한 키)에서만 읽는다.
 키 값은 출력·저장하지 않는다.
 """
 

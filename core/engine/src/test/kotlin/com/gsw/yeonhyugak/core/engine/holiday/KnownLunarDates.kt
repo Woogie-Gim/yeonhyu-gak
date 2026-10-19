@@ -18,4 +18,11 @@ object KnownLunarDates {
     // 음력 12월이 29일로 끝나는 해. 섣달그믐 = 1/28 = 음력 12/29
     val Y2025 =
         LunarDates(LocalDate.of(2025, 1, 29), LocalDate.of(2025, 5, 5), LocalDate.of(2025, 10, 6))
+
+    val Y2026 =
+        LunarDates(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 5, 24), LocalDate.of(2026, 9, 25))
+    val Y2027 =
+        LunarDates(LocalDate.of(2027, 2, 7), LocalDate.of(2027, 5, 13), LocalDate.of(2027, 9, 15))
+    val Y2028 =
+        LunarDates(LocalDate.of(2028, 1, 27), LocalDate.of(2028, 5, 2), LocalDate.of(2028, 10, 3))
 }

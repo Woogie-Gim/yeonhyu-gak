@@ -1,0 +1,728 @@
+{
+  "2020": [
+    {
+      "locdate": 20200101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20200124,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20200125,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20200126,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20200127,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20200301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20200415,
+      "dateName": "제21대 국회의원선거"
+    },
+    {
+      "locdate": 20200430,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20200505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20200606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20200815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20200817,
+      "dateName": "임시공휴일"
+    },
+    {
+      "locdate": 20200930,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20201001,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20201002,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20201003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20201009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20201225,
+      "dateName": "기독탄신일"
+    }
+  ],
+  "2021": [
+    {
+      "locdate": 20210101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20210211,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20210212,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20210213,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20210301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20210505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20210519,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20210606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20210815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20210816,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20210920,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20210921,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20210922,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20211003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20211004,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20211009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20211011,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20211225,
+      "dateName": "기독탄신일"
+    }
+  ],
+  "2022": [
+    {
+      "locdate": 20220101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20220131,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20220201,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20220202,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20220301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20220309,
+      "dateName": "대통령선거일"
+    },
+    {
+      "locdate": 20220505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20220508,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20220601,
+      "dateName": "전국동시지방선거"
+    },
+    {
+      "locdate": 20220606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20220815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20220909,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20220910,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20220911,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20220912,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20221003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20221009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20221010,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20221225,
+      "dateName": "기독탄신일"
+    }
+  ],
+  "2023": [
+    {
+      "locdate": 20230101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20230121,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20230122,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20230123,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20230124,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20230301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20230505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20230527,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20230529,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20230606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20230815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20230928,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20230929,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20230930,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20231002,
+      "dateName": "임시공휴일"
+    },
+    {
+      "locdate": 20231003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20231009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20231225,
+      "dateName": "기독탄신일"
+    }
+  ],
+  "2024": [
+    {
+      "locdate": 20240101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20240209,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20240210,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20240211,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20240212,
+      "dateName": "대체공휴일(설날)"
+    },
+    {
+      "locdate": 20240301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20240410,
+      "dateName": "국회의원선거"
+    },
+    {
+      "locdate": 20240505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20240506,
+      "dateName": "대체공휴일(어린이날)"
+    },
+    {
+      "locdate": 20240515,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20240606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20240815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20240916,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20240917,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20240918,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20241001,
+      "dateName": "임시공휴일"
+    },
+    {
+      "locdate": 20241003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20241009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20241225,
+      "dateName": "기독탄신일"
+    }
+  ],
+  "2025": [
+    {
+      "locdate": 20250101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20250127,
+      "dateName": "임시공휴일"
+    },
+    {
+      "locdate": 20250128,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20250129,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20250130,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20250301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20250303,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20250505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20250505,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20250506,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20250603,
+      "dateName": "임시공휴일(제21대 대통령 선거)"
+    },
+    {
+      "locdate": 20250606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20250815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20251003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20251005,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20251006,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20251007,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20251008,
+      "dateName": "대체공휴일"
+    },
+    {
+      "locdate": 20251009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20251225,
+      "dateName": "기독탄신일"
+    }
+  ],
+  "2026": [
+    {
+      "locdate": 20260101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20260216,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20260217,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20260218,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20260301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20260302,
+      "dateName": "대체공휴일(삼일절)"
+    },
+    {
+      "locdate": 20260501,
+      "dateName": "노동절"
+    },
+    {
+      "locdate": 20260505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20260524,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20260525,
+      "dateName": "대체공휴일(부처님오신날)"
+    },
+    {
+      "locdate": 20260603,
+      "dateName": "전국동시지방선거"
+    },
+    {
+      "locdate": 20260606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20260717,
+      "dateName": "제헌절"
+    },
+    {
+      "locdate": 20260815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20260817,
+      "dateName": "대체공휴일(광복절)"
+    },
+    {
+      "locdate": 20260924,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20260925,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20260926,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20261003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20261005,
+      "dateName": "대체공휴일(개천절)"
+    },
+    {
+      "locdate": 20261009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20261225,
+      "dateName": "기독탄신일"
+    }
+  ],
+  "2027": [
+    {
+      "locdate": 20270101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20270206,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20270207,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20270208,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20270209,
+      "dateName": "대체공휴일(설날)"
+    },
+    {
+      "locdate": 20270301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20270501,
+      "dateName": "노동절"
+    },
+    {
+      "locdate": 20270503,
+      "dateName": "대체공휴일(노동절)"
+    },
+    {
+      "locdate": 20270505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20270513,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20270606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20270717,
+      "dateName": "제헌절"
+    },
+    {
+      "locdate": 20270719,
+      "dateName": "대체공휴일(제헌절)"
+    },
+    {
+      "locdate": 20270815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20270816,
+      "dateName": "대체공휴일(광복절)"
+    },
+    {
+      "locdate": 20270914,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20270915,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20270916,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20271003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20271004,
+      "dateName": "대체공휴일(개천절)"
+    },
+    {
+      "locdate": 20271009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20271011,
+      "dateName": "대체공휴일(한글날)"
+    },
+    {
+      "locdate": 20271225,
+      "dateName": "기독탄신일"
+    },
+    {
+      "locdate": 20271227,
+      "dateName": "대체공휴일(기독탄신일)"
+    }
+  ],
+  "2028": [
+    {
+      "locdate": 20280101,
+      "dateName": "1월1일"
+    },
+    {
+      "locdate": 20280126,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20280127,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20280128,
+      "dateName": "설날"
+    },
+    {
+      "locdate": 20280301,
+      "dateName": "삼일절"
+    },
+    {
+      "locdate": 20280412,
+      "dateName": "국회의원선거일"
+    },
+    {
+      "locdate": 20280501,
+      "dateName": "노동절"
+    },
+    {
+      "locdate": 20280502,
+      "dateName": "부처님오신날"
+    },
+    {
+      "locdate": 20280505,
+      "dateName": "어린이날"
+    },
+    {
+      "locdate": 20280606,
+      "dateName": "현충일"
+    },
+    {
+      "locdate": 20280717,
+      "dateName": "제헌절"
+    },
+    {
+      "locdate": 20280815,
+      "dateName": "광복절"
+    },
+    {
+      "locdate": 20281002,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20281003,
+      "dateName": "개천절"
+    },
+    {
+      "locdate": 20281003,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20281004,
+      "dateName": "추석"
+    },
+    {
+      "locdate": 20281005,
+      "dateName": "대체공휴일(추석)"
+    },
+    {
+      "locdate": 20281009,
+      "dateName": "한글날"
+    },
+    {
+      "locdate": 20281225,
+      "dateName": "기독탄신일"
+    }
+  ]
+}

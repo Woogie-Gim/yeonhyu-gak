@@ -59,4 +59,32 @@ class SubstituteHolidayRuleTest :
             substitutesOf(2024, KnownLunarDates.Y2024) shouldContainExactly
                 listOf(LocalDate.of(2024, 2, 12), LocalDate.of(2024, 5, 6))
         }
+
+        test("노동절·제헌절·성탄절 토요일 → 월요일 (2027 → 5/3 · 7/19 · 12/27)") {
+            substitutesOf(2027, KnownLunarDates.Y2027) shouldContainExactly
+                listOf(
+                    LocalDate.of(2027, 2, 9),
+                    LocalDate.of(2027, 5, 3),
+                    LocalDate.of(2027, 7, 19),
+                    LocalDate.of(2027, 8, 16),
+                    LocalDate.of(2027, 10, 4),
+                    LocalDate.of(2027, 10, 11),
+                    LocalDate.of(2027, 12, 27),
+                )
+        }
+
+        test("2026 삼일절·부처님오신날·광복절·개천절 대체, 노동절·제헌절 금요일은 대체 없음") {
+            substitutesOf(2026, KnownLunarDates.Y2026) shouldContainExactly
+                listOf(
+                    LocalDate.of(2026, 3, 2),
+                    LocalDate.of(2026, 5, 25),
+                    LocalDate.of(2026, 8, 17),
+                    LocalDate.of(2026, 10, 5),
+                )
+        }
+
+        test("추석과 개천절 겹침은 하나만 대체 (2028-10-03 → 10/5)") {
+            substitutesOf(2028, KnownLunarDates.Y2028) shouldContainExactly
+                listOf(LocalDate.of(2028, 10, 5))
+        }
     })

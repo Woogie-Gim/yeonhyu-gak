@@ -4,7 +4,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 
 // 대체공휴일 대상 묶음
-enum class SubstituteGroup { SEOL_CHUSEOK, CHILDREN, NATIONAL_DAYS, BUDDHA_CHRISTMAS }
+enum class SubstituteGroup { SEOL_CHUSEOK, CHILDREN, NATIONAL_DAYS, BUDDHA_CHRISTMAS, LABOR_DAY }
 
 data class SubstituteScope(
     val group: SubstituteGroup,
@@ -25,12 +25,14 @@ object SubstituteHolidayRule {
                 setOf(DayOfWeek.SUNDAY),
             ),
             SubstituteScope(SubstituteGroup.CHILDREN, LocalDate.of(2014, 1, 1), WEEKEND),
-            // 삼일절·광복절·개천절·한글날. 2021 광복절부터
+            // 삼일절·광복절·개천절·한글날. 2021 광복절부터. 제헌절은 2026 지정부터
             SubstituteScope(SubstituteGroup.NATIONAL_DAYS, LocalDate.of(2021, 8, 4), WEEKEND),
             SubstituteScope(SubstituteGroup.BUDDHA_CHRISTMAS, LocalDate.of(2023, 5, 4), WEEKEND),
+            // 노동절. 2026 지정부터
+            SubstituteScope(SubstituteGroup.LABOR_DAY, LocalDate.of(2026, 1, 1), WEEKEND),
         )
 
-    const val NAME = "대체공휴일"
+    const val NAME = HolidayNames.SUBSTITUTE
 
     data class Base(val date: LocalDate, val name: String, val group: SubstituteGroup?)
 

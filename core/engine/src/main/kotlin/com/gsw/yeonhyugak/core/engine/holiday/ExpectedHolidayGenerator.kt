@@ -4,19 +4,67 @@ import com.gsw.yeonhyugak.core.engine.holiday.SubstituteHolidayRule.Base
 import java.time.LocalDate
 import java.time.MonthDay
 
+// 고정 공휴일 규칙. sinceYear 이전 연도는 공휴일 아님 (null = 지원 범위 전체)
+data class FixedHolidayRule(
+    val key: HolidayKey,
+    val monthDay: MonthDay,
+    val sinceYear: Int?,
+    val group: SubstituteGroup?,
+) {
+    fun appliesTo(year: Int): Boolean = sinceYear == null || year >= sinceYear
+}
+
 // 미발표 연도 공휴일 계산. 선거일·임시공휴일은 계산하지 않는다
 object ExpectedHolidayGenerator {
-    // 이름은 특일정보 API 표기와 같게 둔다
-    private val FIXED: List<Triple<MonthDay, String, SubstituteGroup?>> =
+    val FIXED: List<FixedHolidayRule> =
         listOf(
-            Triple(MonthDay.of(1, 1), "1월1일", null),
-            Triple(MonthDay.of(3, 1), "삼일절", SubstituteGroup.NATIONAL_DAYS),
-            Triple(MonthDay.of(5, 5), "어린이날", SubstituteGroup.CHILDREN),
-            Triple(MonthDay.of(6, 6), "현충일", null),
-            Triple(MonthDay.of(8, 15), "광복절", SubstituteGroup.NATIONAL_DAYS),
-            Triple(MonthDay.of(10, 3), "개천절", SubstituteGroup.NATIONAL_DAYS),
-            Triple(MonthDay.of(10, 9), "한글날", SubstituteGroup.NATIONAL_DAYS),
-            Triple(MonthDay.of(12, 25), "기독탄신일", SubstituteGroup.BUDDHA_CHRISTMAS),
+            FixedHolidayRule(HolidayKey.NEW_YEAR, MonthDay.of(1, 1), null, null),
+            FixedHolidayRule(
+                HolidayKey.INDEPENDENCE,
+                MonthDay.of(3, 1),
+                null,
+                SubstituteGroup.NATIONAL_DAYS,
+            ),
+            // 2026 공휴일 지정 (KASI 특일정보 기준)
+            FixedHolidayRule(HolidayKey.LABOR, MonthDay.of(5, 1), 2026, SubstituteGroup.LABOR_DAY),
+            FixedHolidayRule(
+                HolidayKey.CHILDREN,
+                MonthDay.of(5, 5),
+                null,
+                SubstituteGroup.CHILDREN,
+            ),
+            FixedHolidayRule(HolidayKey.MEMORIAL, MonthDay.of(6, 6), null, null),
+            // 2026 공휴일 재지정 (KASI 특일정보 기준)
+            FixedHolidayRule(
+                HolidayKey.CONSTITUTION,
+                MonthDay.of(7, 17),
+                2026,
+                SubstituteGroup.NATIONAL_DAYS,
+            ),
+            FixedHolidayRule(
+                HolidayKey.LIBERATION,
+                MonthDay.of(8, 15),
+                null,
+                SubstituteGroup.NATIONAL_DAYS,
+            ),
+            FixedHolidayRule(
+                HolidayKey.FOUNDATION,
+                MonthDay.of(10, 3),
+                null,
+                SubstituteGroup.NATIONAL_DAYS,
+            ),
+            FixedHolidayRule(
+                HolidayKey.HANGUL,
+                MonthDay.of(10, 9),
+                null,
+                SubstituteGroup.NATIONAL_DAYS,
+            ),
+            FixedHolidayRule(
+                HolidayKey.CHRISTMAS,
+                MonthDay.of(12, 25),
+                null,
+                SubstituteGroup.BUDDHA_CHRISTMAS,
+            ),
         )
 
     fun generate(year: Int, lunar: LunarDates): List<Holiday> {
@@ -46,7 +94,10 @@ object ExpectedHolidayGenerator {
     }
 
     internal fun baseHolidays(year: Int, lunar: LunarDates): List<Base> {
-        val fixed = FIXED.map { (md, name, group) -> Base(md.atYear(year), name, group) }
+        val fixed =
+            FIXED.filter { it.appliesTo(year) }.map {
+                Base(it.monthDay.atYear(year), it.key.kasiName, it.group)
+            }
         val lunarDays =
             threeDays(lunar.seollal, SEOL) +
                 threeDays(lunar.chuseok, CHUSEOK) +
@@ -58,7 +109,7 @@ object ExpectedHolidayGenerator {
     private fun threeDays(day: LocalDate, name: String): List<Base> =
         (-1L..1L).map { Base(day.plusDays(it), name, SubstituteGroup.SEOL_CHUSEOK) }
 
-    private const val SEOL = "설날"
-    private const val CHUSEOK = "추석"
-    private const val BUDDHA = "부처님오신날"
+    private val SEOL = HolidayKey.SEOLLAL.kasiName
+    private val CHUSEOK = HolidayKey.CHUSEOK.kasiName
+    private val BUDDHA = HolidayKey.BUDDHA.kasiName
 }

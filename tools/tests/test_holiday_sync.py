@@ -35,6 +35,14 @@ def test_kind_mapping():
     assert kind_of("광복절") == "NATIONAL"
 
 
+def test_kind_mapping_2026_rules():
+    # 2026부터 노동절·제헌절 공휴일, 대체공휴일은 괄호 표기
+    assert kind_of("노동절") == "NATIONAL"
+    assert kind_of("제헌절") == "NATIONAL"
+    assert kind_of("대체공휴일(노동절)") == "SUBSTITUTE"
+    assert kind_of("임시공휴일(제21대 대통령 선거)") == "TEMPORARY"
+
+
 def test_non_holiday_dropped_and_sorted():
     hs = api_holidays(ITEMS_2025)
     assert [h["date"] for h in hs] == ["2025-01-01", "2025-01-27", "2025-01-28", "2025-05-06", "2025-06-03"]

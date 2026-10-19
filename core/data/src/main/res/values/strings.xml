@@ -1,0 +1,18 @@
+<resources>
+    <!-- 공휴일 표시 이름. KASI 표기와 다른 것만 바꾼다 -->
+    <string name="holiday_new_year">1월1일</string>
+    <string name="holiday_seollal">설날</string>
+    <string name="holiday_independence">삼일절</string>
+    <string name="holiday_labor">노동절</string>
+    <string name="holiday_children">어린이날</string>
+    <string name="holiday_buddha">부처님오신날</string>
+    <string name="holiday_memorial">현충일</string>
+    <string name="holiday_constitution">제헌절</string>
+    <string name="holiday_liberation">광복절</string>
+    <string name="holiday_chuseok">추석</string>
+    <string name="holiday_foundation">개천절</string>
+    <string name="holiday_hangul">한글날</string>
+    <string name="holiday_christmas">성탄절</string>
+    <string name="holiday_substitute">대체공휴일</string>
+    <string name="holiday_substitute_of">대체공휴일(%1$s)</string>
+</resources>
