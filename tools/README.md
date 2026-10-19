@@ -13,7 +13,8 @@ tools/.venv/Scripts/pip install -r tools/requirements.txt   # Windows
 | `lunar_table/` | 음력 공휴일 변환표 생성 | Phase 1 |
 | `holiday_sync/` | 특일정보 API와 번들 비교 | Phase 1 |
 | `tests/` | pytest (네트워크 없이 가짜 응답) | Phase 1 |
-| `sfx/` | 효과음 합성 | Phase 4 |
+| `sfx/` | 효과음 합성 (`generate.py` → core/ui/res/raw) | Phase 4 |
+| `fonts/` | 폰트 받기(`fetch.py`) · 서브셋(`subset.py`) → core/ui/res/font. 출처는 licenses/README.md | Phase 4 |
 | `release_check/` | 릴리스 전 검사 | Phase 6 |
 
 ## 인증키
