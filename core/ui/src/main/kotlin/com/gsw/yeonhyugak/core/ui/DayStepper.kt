@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
+import com.gsw.yeonhyugak.core.ui.theme.numeralText
 
 const val STEPPER_MINUS_TAG = "stepper_minus"
 const val STEPPER_PLUS_TAG = "stepper_plus"
@@ -51,7 +52,7 @@ fun DayStepper(
                 .testTag(STEPPER_MINUS_TAG),
         ) { Text("−", style = MaterialTheme.typography.headlineSmall) }
         Text(
-            text = labels.value,
+            text = YhTheme.fonts.numeralText(labels.value),
             style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold,
             color = YhTheme.colors.ink,

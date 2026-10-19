@@ -22,6 +22,7 @@ local.properties
 
 # tools 가상환경
 tools/.venv
+tools/fonts/.cache/
 __pycache__/
 
 # 모든 모듈 빌드 산출물

@@ -2,11 +2,9 @@ package com.gsw.yeonhyugak.ui
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.room.Room
@@ -18,6 +16,9 @@ import com.gsw.yeonhyugak.core.data.leave.LeaveRepository
 import com.gsw.yeonhyugak.core.data.memo.MemoRepository
 import com.gsw.yeonhyugak.core.data.plan.PlanPreviewStore
 import com.gsw.yeonhyugak.core.data.prefs.UserPrefsRepository
+import com.gsw.yeonhyugak.core.engine.appearance.Appearance
+import com.gsw.yeonhyugak.core.engine.appearance.CheerColor
+import com.gsw.yeonhyugak.core.engine.appearance.ThemeId
 import com.gsw.yeonhyugak.core.engine.leave.LeaveType
 import com.gsw.yeonhyugak.core.engine.planner.Recommender
 import com.gsw.yeonhyugak.core.engine.planner.VacationPlanner
@@ -29,6 +30,8 @@ import com.gsw.yeonhyugak.feature.recommend.RecommendRoute
 import com.gsw.yeonhyugak.feature.recommend.RecommendViewModel
 import com.gsw.yeonhyugak.feature.recommend.onboarding.OnboardingRoute
 import com.gsw.yeonhyugak.feature.recommend.onboarding.OnboardingViewModel
+import com.gsw.yeonhyugak.feature.settings.SettingsRoute
+import com.gsw.yeonhyugak.feature.settings.SettingsViewModel
 import java.io.File
 import java.time.Clock
 import java.time.LocalDate
@@ -62,7 +65,8 @@ class AppHarness(val today: LocalDate = MAY_6) {
             initializer { RecommendViewModel(holidays, leaves, prefs, preview, recommender) }
             initializer { LeaveViewModel(leaves, prefs, clock) }
             initializer { OnboardingViewModel(prefs, clock) }
-            initializer { AppViewModel(prefs) }
+            initializer { AppViewModel(prefs, clock) }
+            initializer { SettingsViewModel(prefs, holidays, leaves, clock) }
         },
     )
 
@@ -70,8 +74,12 @@ class AppHarness(val today: LocalDate = MAY_6) {
         onboarding = {
             OnboardingRoute(onDone = it, viewModel = provider[OnboardingViewModel::class])
         },
-        calendar = {
-            CalendarRoute(snackbarHostState = it, viewModel = provider[CalendarViewModel::class])
+        calendar = { host, openSettings ->
+            CalendarRoute(
+                snackbarHostState = host,
+                onOpenSettings = openSettings,
+                viewModel = provider[CalendarViewModel::class],
+            )
         },
         recommend = {
             RecommendRoute(onOpenCalendar = it, viewModel = provider[RecommendViewModel::class])
@@ -83,13 +91,26 @@ class AppHarness(val today: LocalDate = MAY_6) {
                 viewModel = provider[LeaveViewModel::class],
             )
         },
+        settings = { host, back ->
+            SettingsRoute(
+                snackbarHostState = host,
+                onBack = back,
+                viewModel = provider[SettingsViewModel::class],
+            )
+        },
     )
 
-    // MainActivity와 같은 구성
+    // MainActivity와 같은 구성 (설정에서 읽은 테마 포함)
     @Composable
-    fun App() {
-        val done by provider[AppViewModel::class].onboardingDone.collectAsStateWithLifecycle()
-        YhApp(screens = screens, onboardingDone = done)
+    fun App(dark: Boolean = false) {
+        AppRoot(provider[AppViewModel::class], screens, darkTheme = dark)
+    }
+
+    fun appearance(): Appearance = runBlocking { prefs.appearance.first() }
+
+    fun setTheme(theme: ThemeId, cheer: CheerColor? = null) = runBlocking {
+        prefs.setTheme(theme)
+        cheer?.let { prefs.setCheer(it) }
     }
 
     // 온보딩을 이미 끝낸 사용자

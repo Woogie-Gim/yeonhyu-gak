@@ -44,6 +44,7 @@ import com.gsw.yeonhyugak.core.ui.DayStepper
 import com.gsw.yeonhyugak.core.ui.StepperLabels
 import com.gsw.yeonhyugak.core.ui.showUndo
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
+import com.gsw.yeonhyugak.core.ui.theme.numeralText
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -141,7 +142,9 @@ private fun RemainingSummary(state: LeaveUiState, onEdit: () -> Unit) {
         modifier = Modifier.semantics { heading() },
     )
     Text(
-        stringResource(R.string.leave_days, DayCount.format(state.remaining)),
+        YhTheme.fonts.numeralText(
+            stringResource(R.string.leave_days, DayCount.format(state.remaining)),
+        ),
         style = MaterialTheme.typography.displayLarge,
         fontWeight = FontWeight.Bold,
         color = if (state.remaining < 0) colors.warning else colors.ink,

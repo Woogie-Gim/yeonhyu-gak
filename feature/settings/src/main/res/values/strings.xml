@@ -1,0 +1,44 @@
+<resources>
+    <string name="settings_title">설정</string>
+    <string name="settings_back">뒤로</string>
+    <string name="settings_undo">되돌리기</string>
+
+    <!-- 테마 -->
+    <string name="settings_theme_section">테마</string>
+    <string name="settings_theme_note">기본 노트</string>
+    <string name="settings_theme_note_desc">가장 읽기 쉬운 기본 달력이에요</string>
+    <string name="settings_theme_season">계절</string>
+    <string name="settings_theme_season_desc">달마다 배경과 색이 바뀌어요. 미리보기를 옆으로 넘겨 보세요</string>
+    <string name="settings_theme_analog">아날로그</string>
+    <string name="settings_theme_analog_desc">모눈 다이어리에 형광펜으로 칠해요</string>
+    <string name="settings_theme_lofi">Lo-fi</string>
+    <string name="settings_theme_lofi_desc">밤 방 안 스탠드 불빛 같은 달력이에요</string>
+    <string name="settings_theme_baseball">야구</string>
+    <string name="settings_theme_baseball_desc">구장 전광판 느낌. 응원 색을 고를 수 있어요</string>
+    <string name="settings_theme_in_use">사용 중</string>
+    <string name="settings_theme_changed">%1$s로 바꿨어요</string>
+    <string name="settings_theme_preview">%1$s 테마로 본 %2$d월 내 달력</string>
+    <string name="settings_sound_preview">%1$s 소리 미리 듣기</string>
+    <string name="settings_sound_muted">무음·진동 모드라 소리가 나지 않아요</string>
+
+    <!-- 야구 응원 색. 일반 색 이름만 -->
+    <string name="settings_cheer_title">응원 색</string>
+    <string name="settings_cheer_red">빨강</string>
+    <string name="settings_cheer_blue">파랑</string>
+    <string name="settings_cheer_navy">남색</string>
+    <string name="settings_cheer_orange">주황</string>
+    <string name="settings_cheer_green">초록</string>
+    <string name="settings_cheer_black">검정</string>
+    <string name="settings_cheer_changed">응원 색을 %1$s으로 바꿨어요</string>
+
+    <!-- 효과음 · 햅틱 -->
+    <string name="settings_sound_section">효과음</string>
+    <string name="settings_sound_system">시스템 따르기</string>
+    <string name="settings_sound_system_desc">기기 터치음 설정을 따라요. 무음·진동 모드면 꺼져요</string>
+    <string name="settings_sound_on">켜기</string>
+    <string name="settings_sound_on_desc">무음·진동 모드에서는 켜도 소리가 나지 않아요</string>
+    <string name="settings_sound_off">끄기</string>
+    <string name="settings_sound_off_desc">효과음을 내지 않아요</string>
+    <string name="settings_haptic">햅틱</string>
+    <string name="settings_haptic_desc">연차를 지정하거나 드래그할 때 짧게 진동해요</string>
+</resources>

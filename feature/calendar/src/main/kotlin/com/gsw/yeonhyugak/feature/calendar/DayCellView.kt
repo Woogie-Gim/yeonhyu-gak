@@ -23,12 +23,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,9 +48,9 @@ import java.time.LocalDate
 // 칸 단위 테스트용. 실제 화면은 cellSemantics가 덮어쓴다
 internal fun dayNumberTag(date: LocalDate): String = "cal_num_$date"
 
-private val CellShape = RoundedCornerShape(8.dp)
-private val TopHalfShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-private val BottomHalfShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+// 칸 모서리는 테마 cellStyle
+@Composable
+private fun cellShape(): Shape = RoundedCornerShape(YhTheme.spec.cellStyle.corner)
 
 // 색 + 모양 이중 표기 (SPEC 6장). 메모는 점 하나, 내용은 그리지 않는다
 @Composable
@@ -58,6 +62,7 @@ internal fun DayCellView(
     modifier: Modifier = Modifier,
 ) {
     val colors = YhTheme.colors
+    val shape = cellShape()
     // 최대 높이는 글자 크기를 따라 커진다. 줄이 낮으면 비율대로 줄고 글자도 줄어든다
     val density = LocalDensity.current
     val topMax = with(density) { NUMBER_AREA.toDp() + NAME_AREA.toDp() } + 4.dp
@@ -72,11 +77,11 @@ internal fun DayCellView(
                 .fillMaxWidth()
                 .padding(horizontal = 2.dp),
         ) {
-            LeaveFill(cell.leave)
-            if (cell.isPreview) PreviewFill(colors.accent)
+            LeaveFill(cell.leave, shape)
+            if (cell.isPreview) PreviewFill(colors.accent, shape)
             if (cell.isExpectedHoliday) ExpectedBorder(colors.holiday)
             if (selected) {
-                Box(Modifier.fillMaxSize().border(2.dp, colors.accent, CellShape))
+                Box(Modifier.fillMaxSize().border(2.dp, colors.accent, shape))
             }
             Column(
                 Modifier.fillMaxSize().padding(horizontal = 2.dp, vertical = 2.dp),
@@ -84,22 +89,7 @@ internal fun DayCellView(
             ) {
                 DayNumber(cell, isToday, Modifier.weight(1f))
                 // 이름 영역은 항상 확보. 모든 칸의 숫자 위치를 맞춘다
-                Box(Modifier.weight(HOLIDAY_LABEL_WEIGHT).fillMaxWidth()) {
-                    cell.holidays.firstOrNull()?.let {
-                        AutoText(
-                            text = holidayShortName(it),
-                            color = if (cell.leave ==
-                                LeaveType.FULL
-                            ) {
-                                colors.onAccent
-                            } else {
-                                colors.holiday
-                            },
-                            maxSize = 10.sp,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-                }
+                Box(Modifier.weight(HOLIDAY_LABEL_WEIGHT).fillMaxWidth()) { HolidayLabel(cell) }
             }
             if (hasMemo) {
                 Box(
@@ -122,44 +112,70 @@ internal fun DayCellView(
     }
 }
 
+// 숫자 아래 공휴일 이름 축약 (색 + 글자)
 @Composable
-private fun LeaveFill(leave: LeaveType?) {
-    val accent = YhTheme.colors.accent
-    // 반차는 숫자가 겹치므로 옅게 채워 글자 대비 유지
-    val half = accent.copy(alpha = HALF_FILL_ALPHA)
-    when (leave) {
-        LeaveType.FULL -> Box(Modifier.fillMaxSize().background(accent, CellShape))
+private fun HolidayLabel(cell: DayCell) {
+    val holiday = cell.holidays.firstOrNull() ?: return
+    val colors = YhTheme.colors
+    AutoText(
+        text = AnnotatedString(holidayShortName(holiday)),
+        color = if (cell.leave == LeaveType.FULL) colors.onLeaveFill else colors.holiday,
+        maxSize = 10.sp,
+        modifier = Modifier.fillMaxSize(),
+    )
+}
 
-        // 오전 = 위 반쪽
+@Composable
+private fun LeaveFill(leave: LeaveType?, shape: Shape) {
+    val colors = YhTheme.colors
+    val corner = YhTheme.spec.cellStyle.corner
+    when (leave) {
+        LeaveType.FULL -> Box(Modifier.fillMaxSize().background(colors.leaveFill, shape))
+
+        // 오전 = 위 반쪽. 숫자가 겹치므로 옅게 채우고 바깥 변에 진한 줄 (그래픽 3:1)
         LeaveType.AM_HALF -> Box(Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxWidth().fillMaxHeight(HALF).background(half, TopHalfShape))
+            HalfFill(RoundedCornerShape(topStart = corner, topEnd = corner), top = true)
         }
 
         // 오후 = 아래 반쪽
-        LeaveType.PM_HALF -> Box(Modifier.fillMaxSize()) {
-            Box(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .fillMaxHeight(HALF)
-                    .background(half, BottomHalfShape),
-            )
+        LeaveType.PM_HALF -> Box(
+            Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter,
+        ) {
+            HalfFill(RoundedCornerShape(bottomStart = corner, bottomEnd = corner), top = false)
         }
 
         null -> Unit
     }
 }
 
+@Composable
+private fun HalfFill(shape: Shape, top: Boolean) {
+    val colors = YhTheme.colors
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(HALF)
+            .clip(shape)
+            .background(colors.halfLeaveFill)
+            .drawBehind {
+                val edge = HALF_EDGE.toPx()
+                val y = if (top) 0f else size.height - edge
+                drawRect(colors.leaveFill, Offset(0f, y), Size(size.width, edge))
+            },
+    )
+}
+
 // 담기 전 미리보기: 옅은 채움 + 빗금 + 실선 테두리 (색만으로 구분하지 않음)
 @Composable
-private fun PreviewFill(color: Color) {
+private fun PreviewFill(color: Color, shape: Shape) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(color.copy(alpha = PREVIEW_FILL_ALPHA), CellShape)
-            .border(1.5.dp, color, CellShape)
+            .background(color.copy(alpha = PREVIEW_FILL_ALPHA), shape)
+            .border(1.5.dp, color, shape)
             // 빗금이 옆 칸으로 넘치지 않게
-            .clip(CellShape)
+            .clip(shape)
             .drawBehind {
                 val gap = 6.dp.toPx()
                 val stroke = 1.dp.toPx()
@@ -180,13 +196,14 @@ private fun PreviewFill(color: Color) {
 // 예상 공휴일: 점선 테두리
 @Composable
 private fun ExpectedBorder(color: Color) {
+    val corner = YhTheme.spec.cellStyle.corner
     Box(
         Modifier.fillMaxSize().drawBehind {
             val stroke = 1.5.dp.toPx()
             val dash = 4.dp.toPx()
             drawRoundRect(
                 color = color,
-                cornerRadius = CornerRadius(8.dp.toPx()),
+                cornerRadius = CornerRadius(corner.toPx()),
                 style = Stroke(
                     width = stroke,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, dash)),
@@ -200,33 +217,27 @@ private fun ExpectedBorder(color: Color) {
 private fun DayNumber(cell: DayCell, isToday: Boolean, modifier: Modifier) {
     val colors = YhTheme.colors
     val color = when {
-        cell.leave == LeaveType.FULL -> colors.onAccent
+        cell.leave == LeaveType.FULL -> colors.onLeaveFill
         cell.isHoliday || cell.dayOfWeek == DayOfWeek.SUNDAY -> colors.holiday
         cell.dayOfWeek == DayOfWeek.SATURDAY -> colors.saturday
         else -> colors.ink
     }
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        // 오늘: 링 + 굵은 숫자 (색만으로 구분하지 않음)
         val ring = if (isToday) {
-            Modifier.border(
-                1.5.dp,
-                if (cell.leave ==
-                    LeaveType.FULL
-                ) {
-                    colors.onAccent
-                } else {
-                    colors.ink
-                },
-                CircleShape,
-            )
+            val onLeave = cell.leave == LeaveType.FULL
+            val ringColor = if (onLeave) colors.todayRingOnLeave else colors.todayRing
+            Modifier.border(1.5.dp, ringColor, CircleShape)
         } else {
             Modifier
         }
         Box(ring.padding(horizontal = 6.dp, vertical = 1.dp), contentAlignment = Alignment.Center) {
             AutoText(
-                text = cell.date.dayOfMonth.toString(),
+                text = AnnotatedString(cell.date.dayOfMonth.toString()),
                 color = color,
                 maxSize = 16.sp,
                 weight = if (isToday) FontWeight.Bold else FontWeight.Medium,
+                family = YhTheme.fonts.numeral,
                 modifier = Modifier.testTag(dayNumberTag(cell.date)),
             )
         }
@@ -236,17 +247,18 @@ private fun DayNumber(cell: DayCell, isToday: Boolean, modifier: Modifier) {
 // 글자 크기 200%에서도 칸 안에 맞게 숫자만 줄인다
 @Composable
 internal fun AutoText(
-    text: String,
+    text: AnnotatedString,
     color: Color,
     maxSize: TextUnit,
     modifier: Modifier = Modifier,
     weight: FontWeight = FontWeight.Normal,
     align: TextAlign = TextAlign.Center,
+    family: FontFamily = YhTheme.fonts.body,
 ) {
     BasicText(
         text = text,
         modifier = modifier,
-        style = TextStyle(fontWeight = weight, textAlign = align),
+        style = TextStyle(fontFamily = family, fontWeight = weight, textAlign = align),
         color = { color },
         maxLines = 1,
         // 줄바꿈 허용 + 1줄 제한이어야 넘침을 감지해 글자를 줄인다
@@ -269,6 +281,6 @@ private const val HOLIDAY_LABEL_WEIGHT = 0.6f
 private const val LABEL_WEIGHT = 0.5f
 private const val GAP_WEIGHT = 0.25f
 private const val HALF = 0.5f
-private const val HALF_FILL_ALPHA = 0.45f
+private val HALF_EDGE = 2.dp
 private const val PREVIEW_FILL_ALPHA = 0.18f
 private const val PREVIEW_HATCH_ALPHA = 0.5f

@@ -1,0 +1,40 @@
+# 테마: 톱니 → Lo-fi 카드 → 바로 적용 · 되돌리기 → 앱 다시 켜도 유지
+appId: com.gsw.yeonhyugak.debug
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "onb_start"
+- tapOn:
+    id: "tab_calendar"
+- tapOn:
+    id: "cal_settings"
+- scrollUntilVisible:
+    element:
+      id: "settings_theme_lofi"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings_theme_lofi"
+- assertVisible: "Lo-fi로 바꿨어요"
+- tapOn: "되돌리기"
+- assertNotVisible: "Lo-fi로 바꿨어요"
+# 다시 고르고 재시작해도 저장돼 있다 (선택된 카드)
+- tapOn:
+    id: "settings_theme_lofi"
+- launchApp:
+    stopApp: true
+- tapOn:
+    id: "cal_settings"
+- scrollUntilVisible:
+    element:
+      id: "settings_theme_lofi"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "settings_theme_lofi"
+    checked: true
+# 시스템 뒤로 = 달력으로
+- back
+- assertVisible:
+    id: "cal_settings"

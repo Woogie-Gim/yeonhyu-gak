@@ -7,6 +7,10 @@ import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.gsw.yeonhyugak.core.engine.appearance.Appearance
+import com.gsw.yeonhyugak.core.engine.appearance.CheerColor
+import com.gsw.yeonhyugak.core.engine.appearance.SoundMode
+import com.gsw.yeonhyugak.core.engine.appearance.ThemeId
 import com.gsw.yeonhyugak.core.engine.leave.LeaveBasis
 import java.time.LocalDate
 import javax.inject.Inject
@@ -30,6 +34,43 @@ class UserPrefsRepository @Inject constructor(private val store: DataStore<Prefe
         val day = p[HIRE_DATE] ?: return@map null
         val basis = p[BASIS]?.let { runCatching { LeaveBasis.valueOf(it) }.getOrNull() }
         HireInfo(LocalDate.ofEpochDay(day), basis ?: LeaveBasis.ANNIVERSARY)
+    }
+
+    // 테마·효과음·햅틱. 깨진 값은 기본값으로 읽는다
+    val appearance: Flow<Appearance> = store.data.map { p ->
+        val default = Appearance()
+        Appearance(
+            theme = enumOr(p[THEME], default.theme),
+            cheer = enumOr(p[CHEER], default.cheer),
+            sound = enumOr(p[SOUND], default.sound),
+            haptic = p[HAPTIC] ?: default.haptic,
+        )
+    }
+
+    // 되돌리기용으로 이전 값을 돌려준다
+    suspend fun setTheme(theme: ThemeId): ThemeId = swap(THEME, theme, Appearance().theme)
+
+    suspend fun setCheer(cheer: CheerColor): CheerColor = swap(CHEER, cheer, Appearance().cheer)
+
+    suspend fun setSound(mode: SoundMode) {
+        store.edit { it[SOUND] = mode.name }
+    }
+
+    suspend fun setHaptic(on: Boolean) {
+        store.edit { it[HAPTIC] = on }
+    }
+
+    private suspend inline fun <reified E : Enum<E>> swap(
+        key: Preferences.Key<String>,
+        value: E,
+        default: E,
+    ): E {
+        var previous = default
+        store.edit {
+            previous = enumOr(it[key], default)
+            it[key] = value.name
+        }
+        return previous
     }
 
     suspend fun setAllowance(days: Double) {
@@ -70,5 +111,12 @@ class UserPrefsRepository @Inject constructor(private val store: DataStore<Prefe
         private val ONBOARDING = booleanPreferencesKey("onboarding_done")
         private val HIRE_DATE = longPreferencesKey("hire_date_epoch_day")
         private val BASIS = stringPreferencesKey("leave_basis")
+        private val THEME = stringPreferencesKey("theme_id")
+        private val CHEER = stringPreferencesKey("theme_cheer_color")
+        private val SOUND = stringPreferencesKey("sound_mode")
+        private val HAPTIC = booleanPreferencesKey("haptic_on")
     }
 }
+
+private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =
+    name?.let { runCatching { enumValueOf<E>(it) }.getOrNull() } ?: default

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gsw.yeonhyugak.core.engine.calendar.BlockBand
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
+import com.gsw.yeonhyugak.core.ui.theme.numeralText
 import java.time.LocalDate
 
 // 칸 단위 테스트용. 실제 화면은 cellSemantics가 덮어쓴다
@@ -44,7 +45,7 @@ internal fun bandEdges(band: BlockBand): BandEdges = BandEdges(
 // 연휴 띠: 블록 전체를 잇는 띠. 줄을 넘으면 끝에 화살촉
 @Composable
 internal fun BandRow(band: BlockBand, date: LocalDate) {
-    val color = YhTheme.colors.blockBand
+    val color = YhTheme.colors.bandFill
     Box(Modifier.fillMaxSize()) {
         BandLine(band, color, date, Modifier.align(Alignment.CenterStart))
         if (bandEdges(band).arrowAtEnd) ContinueArrow(color)
@@ -55,8 +56,8 @@ internal fun BandRow(band: BlockBand, date: LocalDate) {
 @Composable
 internal fun BandLabel(band: BlockBand) {
     AutoText(
-        text = stringResource(R.string.cal_band_days, band.length),
-        color = YhTheme.colors.ink,
+        text = YhTheme.fonts.numeralText(stringResource(R.string.cal_band_days, band.length)),
+        color = YhTheme.colors.bandLabel,
         maxSize = 12.sp,
         align = TextAlign.Start,
         modifier = Modifier.fillMaxSize().padding(start = BAND_INSET),

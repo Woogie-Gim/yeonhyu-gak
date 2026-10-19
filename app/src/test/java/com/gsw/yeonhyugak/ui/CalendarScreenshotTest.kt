@@ -9,7 +9,6 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.gsw.yeonhyugak.core.engine.leave.LeaveType
-import com.gsw.yeonhyugak.core.ui.theme.YhTheme
 import com.gsw.yeonhyugak.feature.calendar.cellTag
 import com.gsw.yeonhyugak.feature.leave.LEAVE_REMAINING_TAG
 import com.gsw.yeonhyugak.feature.recommend.REC_FREE_TITLE_TAG
@@ -181,7 +180,7 @@ class CalendarScreenshotTest {
         RuntimeEnvironment.setFontScale(fontScale)
         val h = AppHarness(today).apply(setup)
         harness = h
-        rule.setContent { YhTheme(darkTheme = dark) { h.App() } }
+        rule.setContent { h.App(dark) }
         return h
     }
 

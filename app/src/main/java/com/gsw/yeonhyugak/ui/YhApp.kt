@@ -1,5 +1,6 @@
 package com.gsw.yeonhyugak.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -10,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -28,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import com.gsw.yeonhyugak.R
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
+import com.gsw.yeonhyugak.core.ui.theme.yhThemeId
 
 const val APP_ROOT_TAG = "yh_root"
 
@@ -42,9 +45,10 @@ enum class YhTab(@param:StringRes val label: Int, @param:DrawableRes val icon: I
 // 화면 내용은 호출한 쪽에서 넣는다 (테스트에서 ViewModel 주입)
 class YhScreens(
     val onboarding: @Composable (onDone: () -> Unit) -> Unit = {},
-    val calendar: @Composable (SnackbarHostState) -> Unit = {},
+    val calendar: @Composable (SnackbarHostState, openSettings: () -> Unit) -> Unit = { _, _ -> },
     val recommend: @Composable (openCalendar: () -> Unit) -> Unit = {},
     val leave: @Composable (SnackbarHostState, openRecommend: () -> Unit) -> Unit = { _, _ -> },
+    val settings: @Composable (SnackbarHostState, back: () -> Unit) -> Unit = { _, _ -> },
 )
 
 // onboardingDone: null = 읽는 중(빈 배경만, 깜빡임 방지) · false = 첫 실행 온보딩 · true = 탭
@@ -57,9 +61,14 @@ fun YhApp(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var tab by rememberSaveable { mutableStateOf(YhTab.CALENDAR) }
+    var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    val themeId = YhTheme.spec.id
     val root = modifier
         .fillMaxSize()
-        .semantics { testTagsAsResourceId = true }
+        .semantics {
+            testTagsAsResourceId = true
+            yhThemeId = themeId
+        }
         .testTag(APP_ROOT_TAG)
     when (onboardingDone) {
         null -> Box(root.background(YhTheme.colors.background))
@@ -79,28 +88,57 @@ fun YhApp(
             modifier = root,
             containerColor = YhTheme.colors.background,
             contentColor = YhTheme.colors.ink,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
+            snackbarHost = { YhSnackbarHost(snackbarHostState) },
             bottomBar = {
-                NavigationBar(containerColor = YhTheme.colors.background) {
-                    YhTab.entries.forEach { item ->
-                        NavigationBarItem(
-                            selected = tab == item,
-                            onClick = { tab = item },
-                            icon = { Icon(painterResource(item.icon), contentDescription = null) },
-                            label = { Text(stringResource(item.label)) },
-                            modifier = Modifier.testTag(tabTag(item)),
-                        )
-                    }
-                }
+                // 설정 화면에서는 탭을 숨긴다
+                if (!settingsOpen) YhBottomBar(tab) { tab = it }
             },
         ) { innerPadding ->
             Box(Modifier.padding(innerPadding).fillMaxSize()) {
-                when (tab) {
-                    YhTab.CALENDAR -> screens.calendar(snackbarHostState)
-                    YhTab.RECOMMEND -> screens.recommend { tab = YhTab.CALENDAR }
-                    YhTab.LEAVE -> screens.leave(snackbarHostState) { tab = YhTab.RECOMMEND }
+                if (settingsOpen) {
+                    BackHandler { settingsOpen = false }
+                    screens.settings(snackbarHostState) { settingsOpen = false }
+                } else {
+                    when (tab) {
+                        YhTab.CALENDAR -> screens.calendar(snackbarHostState) {
+                            settingsOpen = true
+                        }
+
+                        YhTab.RECOMMEND -> screens.recommend { tab = YhTab.CALENDAR }
+
+                        YhTab.LEAVE -> screens.leave(snackbarHostState) { tab = YhTab.RECOMMEND }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun YhBottomBar(tab: YhTab, onSelect: (YhTab) -> Unit) {
+    NavigationBar(containerColor = YhTheme.colors.background) {
+        YhTab.entries.forEach { item ->
+            NavigationBarItem(
+                selected = tab == item,
+                onClick = { onSelect(item) },
+                icon = { Icon(painterResource(item.icon), contentDescription = null) },
+                label = { Text(stringResource(item.label)) },
+                modifier = Modifier.testTag(tabTag(item)),
+            )
+        }
+    }
+}
+
+// Undo 스낵바: 테마 토큰 색
+@Composable
+private fun YhSnackbarHost(state: SnackbarHostState) {
+    val colors = YhTheme.colors
+    SnackbarHost(state) { data ->
+        Snackbar(
+            snackbarData = data,
+            containerColor = colors.snackbarContainer,
+            contentColor = colors.snackbarText,
+            actionColor = colors.snackbarAction,
+        )
     }
 }

@@ -6,6 +6,7 @@
     <string name="cal_badge_expected">예상</string>
     <string name="cal_expected_note">아직 발표 전이라 예상한 공휴일이에요</string>
     <string name="cal_today">오늘</string>
+    <string name="cal_settings">설정</string>
     <string name="cal_year_picker_title">연도 고르기</string>
     <string name="cal_year_item">%1$d년</string>
     <string name="cal_year_item_expected">%1$d년 · 예상</string>
@@ -63,10 +64,13 @@
     <!-- 스낵바 -->
     <string name="cal_undo">되돌리기</string>
     <string name="cal_done_full">연차를 지정했어요</string>
+    <!-- 야구 테마. 영문 SAFE 대신 한국어 -->
+    <string name="cal_done_full_baseball">세이프! 연차를 지정했어요</string>
     <string name="cal_done_am">오전 반차를 지정했어요</string>
     <string name="cal_done_pm">오후 반차를 지정했어요</string>
     <string name="cal_done_clear">지정을 해제했어요</string>
     <string name="cal_done_range">연차 %1$s일을 지정했어요</string>
+    <string name="cal_done_range_baseball">세이프! 연차 %1$s일을 지정했어요</string>
     <string name="cal_done_range_none">이 구간은 이미 쉬는 날이에요</string>
     <string name="cal_done_memo_save">메모를 저장했어요</string>
     <string name="cal_done_memo_delete">메모를 지웠어요</string>

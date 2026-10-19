@@ -16,7 +16,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.gsw.yeonhyugak.core.engine.calendar.VacationSpan
 import com.gsw.yeonhyugak.core.ui.STEPPER_MINUS_TAG
 import com.gsw.yeonhyugak.core.ui.STEPPER_PLUS_TAG
-import com.gsw.yeonhyugak.core.ui.theme.YhTheme
 import com.gsw.yeonhyugak.feature.calendar.CALENDAR_PREVIEW_ADD_TAG
 import com.gsw.yeonhyugak.feature.calendar.CALENDAR_PREVIEW_SUMMARY_TAG
 import com.gsw.yeonhyugak.feature.calendar.cellTag
@@ -56,7 +55,7 @@ class AppFlowTest {
 
     private fun launch(today: LocalDate = AppHarness.MAY_6, setup: AppHarness.() -> Unit = {}) {
         harness = AppHarness(today).apply(setup)
-        rule.setContent { YhTheme(darkTheme = false) { harness.App() } }
+        rule.setContent { harness.App() }
     }
 
     @Test

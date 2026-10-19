@@ -1,5 +1,6 @@
 package com.gsw.yeonhyugak.feature.calendar
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,11 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -27,17 +31,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.AccessibilityManager
 import androidx.compose.ui.platform.LocalAccessibilityManager
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -51,12 +58,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gsw.yeonhyugak.core.engine.SupportedYears
+import com.gsw.yeonhyugak.core.engine.appearance.ThemeId
 import com.gsw.yeonhyugak.core.engine.calendar.MonthGrid
 import com.gsw.yeonhyugak.core.engine.calendar.RangeSummary
 import com.gsw.yeonhyugak.core.engine.holiday.Holiday
 import com.gsw.yeonhyugak.core.ui.DayCount
+import com.gsw.yeonhyugak.core.ui.MonthBackdrop
+import com.gsw.yeonhyugak.core.ui.R as CoreUiR
+import com.gsw.yeonhyugak.core.ui.monthFlingBehavior
+import com.gsw.yeonhyugak.core.ui.monthTransition
 import com.gsw.yeonhyugak.core.ui.rememberReduceMotion
+import com.gsw.yeonhyugak.core.ui.rememberYhFeedback
+import com.gsw.yeonhyugak.core.ui.theme.ProvideMonthColors
+import com.gsw.yeonhyugak.core.ui.theme.SfxEffect
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
+import com.gsw.yeonhyugak.core.ui.theme.numeralText
 import java.time.LocalDate
 import java.time.YearMonth
 import kotlinx.coroutines.Job
@@ -69,6 +85,7 @@ const val CALENDAR_TODAY_TAG = "cal_today"
 const val CALENDAR_BUBBLE_TAG = "cal_bubble"
 const val CALENDAR_COACH_TAG = "cal_coach"
 const val CALENDAR_PAGER_TAG = "cal_pager"
+const val CALENDAR_SETTINGS_TAG = "cal_settings"
 
 private const val UNDO_MS = 5_000L
 private const val TIP_MS = 2_500L
@@ -87,7 +104,7 @@ internal fun pageOf(month: YearMonth): Int =
 internal fun monthOf(page: Int): YearMonth = FIRST_MONTH.plusMonths(page.toLong())
 
 // 말풍선 안내 (드래그 요약이 없을 때)
-private sealed interface Tip {
+internal sealed interface Tip {
     data class Holidays(val holidays: List<Holiday>) : Tip
 
     data object Weekend : Tip
@@ -95,10 +112,19 @@ private sealed interface Tip {
     data object Expected : Tip
 }
 
+// 야구 테마: 연차 지정 문구 앞에 `세이프`
+internal fun themedMessageRes(@StringRes res: Int, theme: ThemeId): Int = when {
+    theme != ThemeId.BASEBALL -> res
+    res == R.string.cal_done_full -> R.string.cal_done_full_baseball
+    res == R.string.cal_done_range -> R.string.cal_done_range_baseball
+    else -> res
+}
+
 @Composable
 fun CalendarRoute(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -106,34 +132,26 @@ fun CalendarRoute(
     val a11y = LocalAccessibilityManager.current
     var tip by remember { mutableStateOf<Tip?>(null) }
     val undoLabel = stringResource(R.string.cal_undo)
+    val theme = YhTheme.spec.id
+    val feedback = rememberYhFeedback()
+    val currentTheme by rememberUpdatedState(theme)
+    val currentFeedback by rememberUpdatedState(feedback)
 
     LaunchedEffect(viewModel) {
         var undoJob: Job? = null
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is CalendarEvent.Changed -> {
+                    val done = event.message.res == R.string.cal_done_add
+                    if (done) currentFeedback.sound(SfxEffect.SUCCESS)
                     undoJob?.cancel()
                     undoJob = launch {
                         val message = res.getString(
-                            event.message.res,
+                            themedMessageRes(event.message.res, currentTheme),
                             *event.message.args.toTypedArray(),
                         )
-                        // TalkBack 사용자는 권장 시간만큼 더 길게
-                        val timeout = a11y?.calculateRecommendedTimeoutMillis(
-                            UNDO_MS,
-                            containsIcons = false,
-                            containsText = true,
-                            containsControls = event.undoable,
-                        ) ?: UNDO_MS
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        val result = withTimeoutOrNull(timeout) {
-                            snackbarHostState.showSnackbar(
-                                message = message,
-                                actionLabel = if (event.undoable) undoLabel else null,
-                                duration = SnackbarDuration.Indefinite,
-                            )
-                        }
-                        if (result == SnackbarResult.ActionPerformed) viewModel.undo()
+                        val label = if (event.undoable) undoLabel else null
+                        if (snackbarHostState.showChange(message, label, a11y)) viewModel.undo()
                     }
                 }
 
@@ -156,9 +174,33 @@ fun CalendarRoute(
         state = state,
         tip = tip,
         onShowExpectedTip = { tip = Tip.Expected },
+        onOpenSettings = onOpenSettings,
         viewModel = viewModel,
         modifier = modifier,
     )
+}
+
+// 변경 스낵바 5초. TalkBack 사용자는 권장 시간만큼 더 길게. 되돌리기를 누르면 true
+private suspend fun SnackbarHostState.showChange(
+    message: String,
+    undoLabel: String?,
+    a11y: AccessibilityManager?,
+): Boolean {
+    val timeout = a11y?.calculateRecommendedTimeoutMillis(
+        UNDO_MS,
+        containsIcons = false,
+        containsText = true,
+        containsControls = undoLabel != null,
+    ) ?: UNDO_MS
+    currentSnackbarData?.dismiss()
+    val result = withTimeoutOrNull(timeout) {
+        showSnackbar(
+            message = message,
+            actionLabel = undoLabel,
+            duration = SnackbarDuration.Indefinite,
+        )
+    }
+    return result == SnackbarResult.ActionPerformed
 }
 
 // 드래그 중 선택 구간. 화면 상태라 ViewModel에 두지 않는다
@@ -194,6 +236,7 @@ private fun CalendarScreen(
     state: CalendarUiState,
     tip: Tip?,
     onShowExpectedTip: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: CalendarViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -204,6 +247,7 @@ private fun CalendarScreen(
     val drag = remember { DragSelection() }
     var yearPickerOpen by remember { mutableStateOf(false) }
     val month = monthOf(pagerState.currentPage)
+    PageSoundEffect(pagerState)
 
     // 애니메이션 줄이기면 바로 이동
     fun goTo(target: YearMonth) = scope.launch {
@@ -229,6 +273,7 @@ private fun CalendarScreen(
                 onTitle = { yearPickerOpen = true },
                 onExpected = onShowExpectedTip,
                 onToday = { goTo(YearMonth.from(state.today)) },
+                onSettings = onOpenSettings,
             )
             Bubble(
                 text = bubbleText(summary, state.rangeAnchor, tip),
@@ -241,14 +286,17 @@ private fun CalendarScreen(
                 state = pagerState,
                 // 드래그 선택 중에는 월 넘김 막기
                 userScrollEnabled = !drag.active,
+                flingBehavior = monthFlingBehavior(pagerState, reduceMotion),
                 modifier = Modifier.weight(1f).fillMaxWidth().testTag(CALENDAR_PAGER_TAG),
             ) { page ->
-                MonthPage(
-                    month = monthOf(page),
-                    state = state,
-                    selection = selection ?: state.rangeAnchor?.let { it..it },
-                    callbacks = callbacks,
-                )
+                MonthPlate(pagerState, page, reduceMotion) {
+                    MonthPage(
+                        month = monthOf(page),
+                        state = state,
+                        selection = selection ?: state.rangeAnchor?.let { it..it },
+                        callbacks = callbacks,
+                    )
+                }
             }
         }
         BottomSlot(state, viewModel)
@@ -256,15 +304,7 @@ private fun CalendarScreen(
 
     DaySheetHost(state, viewModel)
     if (yearPickerOpen) {
-        YearPickerSheet(
-            current = month.year,
-            isExpected = state::isExpected,
-            onPick = { year ->
-                yearPickerOpen = false
-                goTo(YearMonth.of(year, month.monthValue))
-            },
-            onDismiss = { yearPickerOpen = false },
-        )
+        YearPickerHost(month, state, onDismiss = { yearPickerOpen = false }) { goTo(it) }
     }
 }
 
@@ -284,31 +324,33 @@ private fun rememberGridCallbacks(
     viewModel: CalendarViewModel,
     drag: DragSelection,
 ): GridCallbacks {
-    val haptic = LocalHapticFeedback.current
+    val feedback = rememberYhFeedback()
     // 미리보기 중에는 지정하지 않는다. 월 넘김만 허용
     if (state.preview != null) return PreviewOnlyCallbacks
     return GridCallbacks(
         onTap = { date ->
             val marked = date in state.leaves
             if (marked || state.isWorkday(date)) {
-                haptic.performHapticFeedback(
+                feedback.haptic(
                     if (marked) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn,
                 )
+                feedback.sound(if (marked) SfxEffect.UNMARK else SfxEffect.MARK)
             }
             viewModel.onTap(date)
         },
         onLongPress = viewModel::openSheet,
         onDragStart = { date ->
             // 모드 전환을 햅틱으로 알림
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            feedback.haptic(HapticFeedbackType.LongPress)
             drag.start(date)
         },
         onDragMove = { date ->
-            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+            feedback.haptic(HapticFeedbackType.SegmentFrequentTick)
             drag.move(date)
         },
         onDragEnd = { from, to ->
             drag.clear()
+            feedback.sound(SfxEffect.MARK)
             viewModel.commitRange(from, to)
         },
         onDragCancel = drag::clear,
@@ -327,6 +369,25 @@ private val PreviewOnlyCallbacks = GridCallbacks(
     onRangeFrom = {},
     onRangeTo = {},
 )
+
+// 연도 고르면 같은 달의 그 연도로
+@Composable
+private fun YearPickerHost(
+    month: YearMonth,
+    state: CalendarUiState,
+    onDismiss: () -> Unit,
+    onGo: (YearMonth) -> Unit,
+) {
+    YearPickerSheet(
+        current = month.year,
+        isExpected = state::isExpected,
+        onPick = { year ->
+            onDismiss()
+            onGo(YearMonth.of(year, month.monthValue))
+        },
+        onDismiss = onDismiss,
+    )
+}
 
 @Composable
 private fun DaySheetHost(state: CalendarUiState, viewModel: CalendarViewModel) {
@@ -367,118 +428,6 @@ private fun MonthPage(
                 selection = selection,
                 rowHeight = rowHeight,
                 callbacks = callbacks,
-            )
-        }
-    }
-}
-
-@Composable
-private fun TopBar(
-    month: YearMonth,
-    expected: Boolean,
-    onTitle: () -> Unit,
-    onExpected: () -> Unit,
-    onToday: () -> Unit,
-) {
-    val colors = YhTheme.colors
-    val title = stringResource(R.string.cal_title_month, month.year, month.monthValue)
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = 8.dp).heightIn(min = 48.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier
-                .heightIn(min = 48.dp)
-                .clickable(
-                    role = Role.Button,
-                    onClickLabel = stringResource(R.string.cal_title_hint),
-                    onClick = onTitle,
-                )
-                .padding(horizontal = 8.dp)
-                .semantics { heading() }
-                .testTag(CALENDAR_TITLE_TAG),
-            contentAlignment = Alignment.CenterStart,
-        ) {
-            Text(
-                stringResource(R.string.cal_title_month_picker, month.year, month.monthValue),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.clearAndSetSemantics {
-                    contentDescription = title
-                },
-            )
-        }
-        if (expected) {
-            // 예상 배지: 글자 + 테두리. 누르면 설명
-            Box(
-                Modifier
-                    .heightIn(min = 48.dp)
-                    .clickable(role = Role.Button, onClick = onExpected),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    stringResource(R.string.cal_badge_expected),
-                    color = colors.holiday,
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier
-                        .border(1.dp, colors.holiday, CircleShape)
-                        .padding(horizontal = 8.dp, vertical = 2.dp),
-                )
-            }
-        }
-        Box(Modifier.weight(1f))
-        TextButton(
-            onClick = onToday,
-            modifier = Modifier.heightIn(min = 48.dp).testTag(CALENDAR_TODAY_TAG),
-        ) {
-            Text(stringResource(R.string.cal_today))
-        }
-    }
-}
-
-@Composable
-private fun bubbleText(summary: RangeSummary?, anchor: LocalDate?, tip: Tip?): String? = when {
-    summary != null && summary.isOver -> stringResource(
-        R.string.cal_bubble_range_over,
-        DayCount.format(summary.cost),
-        summary.totalDays,
-        DayCount.format(summary.overBy),
-    )
-
-    summary != null ->
-        stringResource(R.string.cal_bubble_range, DayCount.format(summary.cost), summary.totalDays)
-
-    anchor != null -> stringResource(R.string.cal_bubble_anchor, dateLabel(anchor))
-
-    tip is Tip.Holidays -> tip.holidays.map { holidayName(it) }.joinToString()
-
-    tip == Tip.Weekend -> stringResource(R.string.cal_bubble_weekend)
-
-    tip == Tip.Expected -> stringResource(R.string.cal_expected_note)
-
-    else -> null
-}
-
-// 드래그 요약·공휴일 이름 말풍선. 초과면 경고색 + 글자
-@Composable
-private fun Bubble(text: String?, warning: Boolean) {
-    val colors = YhTheme.colors
-    Box(
-        Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (text != null) {
-            Text(
-                text = text,
-                color = if (warning) colors.onWarning else colors.background,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .background(
-                        if (warning) colors.warning else colors.ink,
-                        RoundedCornerShape(16.dp),
-                    )
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                    .semantics { liveRegion = LiveRegionMode.Polite }
-                    .testTag(CALENDAR_BUBBLE_TAG),
             )
         }
     }
