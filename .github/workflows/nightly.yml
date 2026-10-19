@@ -61,4 +61,5 @@ jobs:
 
       # TODO(Phase 6): 에뮬레이터에서 Maestro 전체 + monkey 5,000 이벤트
       - name: Maestro · monkey
-        run: echo "TODO: maestro test .maestro/ && adb shell monkey (Phase 6)"
+        run: |
+          echo "TODO: maestro test .maestro/ && adb shell monkey (Phase 6)"

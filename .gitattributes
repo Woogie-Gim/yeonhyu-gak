@@ -1,6 +1,16 @@
+# 텍스트는 LF로 고정. Windows 배치 파일만 CRLF
 * text=auto eol=lf
 *.bat text eol=crlf
+gradlew text eol=lf
+*.sh text eol=lf
+
+# 바이너리
 *.png binary
+*.jpg binary
 *.webp binary
 *.jar binary
 *.ogg binary
+*.ttf binary
+*.otf binary
+*.jks binary
+*.keystore binary

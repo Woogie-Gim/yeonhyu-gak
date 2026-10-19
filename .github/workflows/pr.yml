@@ -47,12 +47,31 @@ jobs:
       - name: 디버그 빌드
         run: ./gradlew assembleDebug
 
-      - name: 리포트 보관
+      # 실패 시: Roborazzi 실제·기준·차이 이미지 + 테스트·정적 분석 리포트
+      - name: 실패 리포트 보관
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-failure-reports
+          retention-days: 14
+          path: |
+            **/build/outputs/roborazzi/
+            **/build/reports/roborazzi/
+            **/build/reports/tests/
+            **/build/test-results/
+            **/build/reports/lint-results*
+            **/build/reports/detekt/
+            **/build/reports/ktlint/
+          if-no-files-found: ignore
+
+      # 성공해도 스크린샷 비교 결과는 확인할 수 있게
+      - name: Roborazzi 리포트 보관
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports
+          name: roborazzi-report
+          retention-days: 7
           path: |
-            **/build/reports/
             **/build/outputs/roborazzi/
+            **/build/reports/roborazzi/
           if-no-files-found: ignore

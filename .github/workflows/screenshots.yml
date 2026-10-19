@@ -1,0 +1,33 @@
+name: Screenshots baseline
+
+# Roborazzi 기준 이미지는 CI(Linux)에서만 기록한다.
+# 실행 후 받기: gh run download <run-id> -n roborazzi-baseline -D app/src/test/screenshots
+on:
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 기준 이미지 기록
+        run: ./gradlew recordRoborazziDebug
+
+      - name: 기준 이미지 보관
+        uses: actions/upload-artifact@v4
+        with:
+          name: roborazzi-baseline
+          retention-days: 14
+          path: app/src/test/screenshots/*.png
+          if-no-files-found: error
