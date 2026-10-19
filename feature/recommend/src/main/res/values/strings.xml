@@ -1,0 +1,76 @@
+<resources>
+    <!-- 온보딩 -->
+    <string name="onb_question">올해 남은 연차가 몇 개예요?</string>
+    <string name="onb_value">%1$s일</string>
+    <string name="onb_minus">반나절 줄이기</string>
+    <string name="onb_plus">반나절 늘리기</string>
+    <string name="onb_unknown">잘 모르겠어요 → 입사일로 계산하기</string>
+    <string name="onb_start">추천 보기</string>
+    <string name="onb_later_note">나중에 내 연차 화면에서 언제든 고칠 수 있어요</string>
+    <string name="onb_hire_title">입사일로 계산하기</string>
+    <string name="onb_hire_pick">입사일 고르기</string>
+    <string name="onb_hire_date">입사일 %1$d년 %2$d월 %3$d일</string>
+    <string name="onb_basis_anniversary">입사일 기준</string>
+    <string name="onb_basis_fiscal">회계연도 기준</string>
+    <string name="onb_hire_apply">이 값으로 채우기</string>
+    <string name="onb_hire_result">올해 생기는 연차는 %1$s일이에요</string>
+    <string name="onb_hire_cancel">닫기</string>
+    <string name="onb_hire_ok">확인</string>
+    <string name="onb_reference">참고용 계산이에요. 회사 규정이 우선이에요</string>
+
+    <!-- 추천 상단 -->
+    <string name="rec_remaining">남은 연차 %1$s일</string>
+    <string name="rec_remaining_next">%1$d년 연차 %2$s일로 계산했어요</string>
+    <string name="rec_period_rest">올해 남은 기간</string>
+    <string name="rec_period_next">내년 보기</string>
+    <string name="rec_period_next_badge">추천</string>
+    <string name="rec_period_next_hint">연말이라 내년 연휴를 먼저 보면 좋아요</string>
+    <string name="rec_min_length">%1$d일+</string>
+    <string name="rec_month_any">월 전체</string>
+    <string name="rec_month_item">%1$d월</string>
+    <string name="rec_sort_efficiency">효율 순</string>
+    <string name="rec_sort_length">긴 순</string>
+    <string name="rec_sort_date">날짜 순</string>
+    <string name="rec_sort_label">정렬: %1$s</string>
+    <string name="rec_filter_label">필터</string>
+    <string name="rec_selected">선택됨</string>
+
+    <string-array name="rec_seasons">
+        <item>봄</item>
+        <item>여름</item>
+        <item>가을</item>
+        <item>겨울</item>
+    </string-array>
+
+    <!-- 카드 -->
+    <string name="rec_card_title">연차 %1$d일 → %2$d일 휴가</string>
+    <string name="rec_card_free_title">연차 없이 %1$d일 휴가</string>
+    <string name="rec_card_range">%1$s ~ %2$s</string>
+    <string name="rec_card_date">%1$d월 %2$d일(%3$s)</string>
+    <string name="rec_card_date_year">%1$d년 %2$d월 %3$d일(%4$s)</string>
+    <string name="rec_card_efficiency">효율 %1$s배</string>
+    <string name="rec_card_holiday">%1$s 연휴</string>
+    <string name="rec_card_booked">달력에 지정한 연차 %1$d일 포함</string>
+    <string name="rec_card_years">%1$d년 %2$d일 · %3$d년 %4$d일 차감</string>
+    <string name="rec_card_action">달력에서 미리보기</string>
+
+    <string-array name="rec_weekday_short">
+        <item>일</item>
+        <item>월</item>
+        <item>화</item>
+        <item>수</item>
+        <item>목</item>
+        <item>금</item>
+        <item>토</item>
+    </string-array>
+
+    <!-- 연간 자동 배치 -->
+    <string name="rec_auto_plan">남은 연차로 한 번에 배치하기</string>
+
+    <!-- 빈 화면 -->
+    <string name="rec_free_title">남은 연차가 없어도 쉬는 날이 있어요</string>
+    <string name="rec_free_body">공휴일과 주말로 이미 3일 이상 쉬는 구간이에요</string>
+    <string name="rec_empty_title">조건에 맞는 연휴가 없어요</string>
+    <string name="rec_empty_body">필터를 풀거나 내년 보기를 눌러 보세요</string>
+    <string name="rec_empty_clear">필터 풀기</string>
+</resources>

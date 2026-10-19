@@ -64,6 +64,7 @@ internal fun cellDescription(
         LeaveType.PM_HALF -> parts += stringResource(R.string.cal_a11y_pm)
         null -> Unit
     }
+    if (cell.isPreview) parts += stringResource(R.string.cal_a11y_preview)
     cell.band?.let { parts += stringResource(R.string.cal_a11y_band, it.length) }
     if (hasMemo) parts += stringResource(R.string.cal_a11y_memo)
     if (selected) parts += stringResource(R.string.cal_a11y_selected)

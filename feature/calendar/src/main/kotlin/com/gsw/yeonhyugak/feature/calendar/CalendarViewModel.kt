@@ -6,16 +6,20 @@ import androidx.lifecycle.viewModelScope
 import com.gsw.yeonhyugak.core.data.holiday.HolidayRepository
 import com.gsw.yeonhyugak.core.data.leave.LeaveRepository
 import com.gsw.yeonhyugak.core.data.memo.MemoRepository
+import com.gsw.yeonhyugak.core.data.plan.PlanPreview
+import com.gsw.yeonhyugak.core.data.plan.PlanPreviewStore
 import com.gsw.yeonhyugak.core.data.prefs.UserPrefsRepository
 import com.gsw.yeonhyugak.core.engine.calendar.LeaveToggle
 import com.gsw.yeonhyugak.core.engine.calendar.MonthGrid
 import com.gsw.yeonhyugak.core.engine.calendar.RangeSelection
 import com.gsw.yeonhyugak.core.engine.calendar.RangeSummary
 import com.gsw.yeonhyugak.core.engine.calendar.TapResult
+import com.gsw.yeonhyugak.core.engine.calendar.VacationSpan
 import com.gsw.yeonhyugak.core.engine.holiday.Holiday
 import com.gsw.yeonhyugak.core.engine.holiday.HolidayCalendar
 import com.gsw.yeonhyugak.core.engine.leave.LeaveType
 import com.gsw.yeonhyugak.core.engine.planner.WorkCalendar
+import com.gsw.yeonhyugak.core.ui.DayCount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import java.time.LocalDate
@@ -50,6 +54,16 @@ sealed interface CalendarEvent {
 // 시트에 띄운 날짜. 메모 내용은 시트에서만 쓴다
 data class DaySheetState(val date: LocalDate, val memo: String?)
 
+// 담기 전 미리보기 요약. 하단 바 `연차 2일 → 5일 휴가`
+data class PreviewSummary(
+    val leaveDates: List<LocalDate>,
+    val spans: List<ClosedRange<LocalDate>>,
+) {
+    val cost: Int get() = leaveDates.size
+
+    val totalDays: Int get() = spans.sumOf(VacationSpan::length)
+}
+
 data class CalendarUiState(
     val today: LocalDate,
     val holidays: HolidayCalendar? = null,
@@ -60,14 +74,27 @@ data class CalendarUiState(
     val coachMarkVisible: Boolean = false,
     val rangeAnchor: LocalDate? = null,
     val sheet: DaySheetState? = null,
+    val preview: PlanPreview? = null,
 ) {
     val isLoaded: Boolean get() = holidays != null
 
     // 회사 휴무일·근무 요일 설정은 Phase 6
     val work: WorkCalendar get() = WorkCalendar(holidays = holidays?.holidayDates.orEmpty())
 
+    // 이미 연차 1일인 날은 미리보기에서 뺀다
+    private val previewDates: Set<LocalDate>
+        get() = preview?.leaveDates.orEmpty().filterTo(mutableSetOf()) {
+            leaves[it] != LeaveType.FULL
+        }
+
+    val previewSummary: PreviewSummary?
+        get() = preview?.let {
+            val dates = previewDates
+            PreviewSummary(dates.sorted(), VacationSpan.spansOf(dates, work, leaves))
+        }
+
     fun grid(month: YearMonth): MonthGrid? =
-        holidays?.let { MonthGrid.build(month, it, work, leaves) }
+        holidays?.let { MonthGrid.build(month, it, work, leaves, previewDates) }
 
     fun summarize(from: LocalDate, to: LocalDate): RangeSummary =
         RangeSelection.summarize(from, to, work, leaves, allowance)
@@ -83,12 +110,13 @@ class CalendarViewModel @Inject constructor(
     leaveRepo: LeaveRepository,
     private val memoRepo: MemoRepository,
     private val prefs: UserPrefsRepository,
+    private val previewStore: PlanPreviewStore,
     clock: Clock,
 ) : ViewModel() {
     private val today = LocalDate.now(clock)
     private val local = MutableStateFlow(LocalState())
     private val events = Channel<CalendarEvent>(Channel.BUFFERED)
-    private val editor = CalendarEditor(leaveRepo, memoRepo)
+    private val editor = CalendarEditor(leaveRepo, memoRepo, prefs)
 
     val eventFlow: Flow<CalendarEvent> = events.receiveAsFlow()
 
@@ -98,8 +126,8 @@ class CalendarViewModel @Inject constructor(
             leaveRepo.observe(),
             memoRepo.observeDates(),
             combine(prefs.allowance, prefs.coachMarkShown, ::Pair),
-            local,
-        ) { holidays, leaves, memoDates, (allowance, coachShown), l ->
+            combine(local, previewStore.preview, ::Pair),
+        ) { holidays, leaves, memoDates, (allowance, coachShown), (l, preview) ->
             CalendarUiState(
                 today = today,
                 holidays = holidays,
@@ -109,6 +137,7 @@ class CalendarViewModel @Inject constructor(
                 coachMarkVisible = !coachShown,
                 rangeAnchor = l.anchor,
                 sheet = l.sheet,
+                preview = preview,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_MS), CalendarUiState(today))
 
@@ -117,12 +146,12 @@ class CalendarViewModel @Inject constructor(
         when (LeaveToggle.onTap(date, s.work, s.leaves)) {
             is TapResult.Marked -> {
                 editor.mark(listOf(date), LeaveType.FULL)
-                changed(doneMessage(LeaveType.FULL), marked = true)
+                events.send(CalendarEvent.Changed(doneMessage(LeaveType.FULL)))
             }
 
             is TapResult.Cleared -> {
                 editor.clear(date)
-                changed(doneMessage(null))
+                events.send(CalendarEvent.Changed(doneMessage(null)))
             }
 
             is TapResult.NotWorkday -> {
@@ -149,9 +178,10 @@ class CalendarViewModel @Inject constructor(
             )
         } else {
             editor.mark(summary.leaveDates, LeaveType.FULL)
-            changed(
-                UiMessage(R.string.cal_done_range, listOf(DayCount.format(summary.cost))),
-                marked = true,
+            events.send(
+                CalendarEvent.Changed(
+                    UiMessage(R.string.cal_done_range, listOf(DayCount.format(summary.cost))),
+                ),
             )
         }
     }
@@ -160,7 +190,7 @@ class CalendarViewModel @Inject constructor(
     fun setLeave(date: LocalDate, type: LeaveType?) = launch {
         closeSheet()
         if (type == null) editor.clear(date) else editor.mark(listOf(date), type)
-        changed(doneMessage(type), marked = type != null)
+        events.send(CalendarEvent.Changed(doneMessage(type)))
     }
 
     fun openSheet(date: LocalDate) = launch {
@@ -173,11 +203,9 @@ class CalendarViewModel @Inject constructor(
     fun saveMemo(date: LocalDate, text: String) = launch {
         closeSheet()
         editor.saveMemo(date, text)
-        changed(
-            UiMessage(
-                if (text.isBlank()) R.string.cal_done_memo_delete else R.string.cal_done_memo_save,
-            ),
-        )
+        val message =
+            if (text.isBlank()) R.string.cal_done_memo_delete else R.string.cal_done_memo_save
+        events.send(CalendarEvent.Changed(UiMessage(message)))
     }
 
     // TalkBack 범위 선택: 시작점 기억
@@ -195,13 +223,17 @@ class CalendarViewModel @Inject constructor(
 
     fun dismissCoachMark() = launch { prefs.markCoachMarkShown() }
 
-    fun undo() = launch { editor.undo() }
-
-    // 첫 지정에 성공하면 코치마크를 닫고 다시 띄우지 않는다
-    private suspend fun changed(message: UiMessage, marked: Boolean = false) {
-        if (marked && state.value.coachMarkVisible) prefs.markCoachMarkShown()
-        events.send(CalendarEvent.Changed(message))
+    // 미리보기 끝. add면 달력에 담고 완료 문구는 담기와 같은 단어
+    fun finishPreview(add: Boolean) = launch {
+        val dates = state.value.previewSummary?.leaveDates.orEmpty()
+        previewStore.clear()
+        if (add && dates.isNotEmpty()) {
+            editor.mark(dates, LeaveType.FULL)
+            events.send(CalendarEvent.Changed(UiMessage(R.string.cal_done_add)))
+        }
     }
+
+    fun undo() = launch { editor.undo() }
 
     private data class LocalState(val anchor: LocalDate? = null, val sheet: DaySheetState? = null)
 

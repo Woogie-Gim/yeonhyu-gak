@@ -70,6 +70,14 @@
     <string name="cal_done_range_none">이 구간은 이미 쉬는 날이에요</string>
     <string name="cal_done_memo_save">메모를 저장했어요</string>
     <string name="cal_done_memo_delete">메모를 지웠어요</string>
+    <string name="cal_done_add">달력에 담았어요</string>
+
+    <!-- 추천 미리보기 -->
+    <string name="cal_preview_one">연차 %1$d일 → %2$d일 휴가</string>
+    <string name="cal_preview_many">연차 %1$d일 → 연휴 %2$d번 · 모두 %3$d일 휴가</string>
+    <string name="cal_preview_add">달력에 담기</string>
+    <string name="cal_preview_cancel">취소</string>
+    <string name="cal_preview_note">담기 전에는 저장되지 않아요</string>
 
     <!-- TalkBack -->
     <string name="cal_a11y_workday">근무일</string>
@@ -83,6 +91,7 @@
     <string name="cal_a11y_today">오늘</string>
     <string name="cal_a11y_band">%1$d일 연휴</string>
     <string name="cal_a11y_selected">선택 중</string>
+    <string name="cal_a11y_preview">담기 전 미리보기</string>
     <string name="cal_a11y_action_mark">연차 지정</string>
     <string name="cal_a11y_action_clear">연차 해제</string>
     <string name="cal_a11y_action_name">공휴일 이름 듣기</string>

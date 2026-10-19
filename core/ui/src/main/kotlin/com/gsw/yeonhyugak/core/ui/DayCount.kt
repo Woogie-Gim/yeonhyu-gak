@@ -1,4 +1,4 @@
-package com.gsw.yeonhyugak.feature.calendar
+package com.gsw.yeonhyugak.core.ui
 
 // 일 수 표시: 정수면 3, 반차 섞이면 2.5
 object DayCount {

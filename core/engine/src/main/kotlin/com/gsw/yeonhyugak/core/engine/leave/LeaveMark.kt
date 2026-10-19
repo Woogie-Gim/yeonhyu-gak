@@ -17,6 +17,10 @@ object LeaveLedger {
     fun used(leaves: Map<LocalDate, LeaveType>, year: Int): Double =
         leaves.entries.filter { it.key.year == year }.sumOf { it.value.amount }
 
+    // 총량 − 지정분. 초과하면 음수 그대로
+    fun remaining(allowance: Double, leaves: Map<LocalDate, LeaveType>, year: Int): Double =
+        allowance - used(leaves, year)
+
     fun usedByYear(leaves: Map<LocalDate, LeaveType>): Map<Int, Double> =
         leaves.entries.groupBy { it.key.year }.mapValues { (_, e) -> e.sumOf { it.value.amount } }
 }

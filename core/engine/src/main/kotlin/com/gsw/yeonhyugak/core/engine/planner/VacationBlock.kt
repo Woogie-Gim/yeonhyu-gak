@@ -5,11 +5,11 @@ import java.time.temporal.ChronoUnit
 
 // 연휴 블록. leaveDates = 연차로 메운 근무일
 data class VacationBlock(
-    val start: LocalDate,
+    override val start: LocalDate,
     val end: LocalDate,
     val leaveDates: List<LocalDate>,
-) {
-    val totalDays: Int get() = ChronoUnit.DAYS.between(start, end).toInt() + 1
+) : Vacation {
+    override val totalDays: Int get() = ChronoUnit.DAYS.between(start, end).toInt() + 1
 
     val cost: Int get() = leaveDates.size
 
@@ -18,15 +18,12 @@ data class VacationBlock(
 
     val spansYears: Boolean get() = start.year != end.year
 
-    // 연차 없이 쉬는 구간은 무한대
-    val efficiency: Double get() = if (cost ==
-        0
-    ) {
-        Double.POSITIVE_INFINITY
-    } else {
-        totalDays.toDouble() / cost
-    }
+    override val efficiency: Double get() = efficiencyOf(totalDays, cost)
 
     fun overlaps(other: VacationBlock): Boolean =
         !end.isBefore(other.start) && !other.end.isBefore(start)
 }
+
+// 연차 없이 쉬는 구간은 무한대
+internal fun efficiencyOf(totalDays: Int, cost: Int): Double =
+    if (cost == 0) Double.POSITIVE_INFINITY else totalDays.toDouble() / cost

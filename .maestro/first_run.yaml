@@ -1,0 +1,24 @@
+# 첫 실행 전체 흐름: 온보딩 → 추천 → 카드 미리보기 → 달력에 담기 → 되돌리기
+# 담기까지 3탭 (목표 5탭 이하)
+appId: com.gsw.yeonhyugak.debug
+---
+- launchApp:
+    clearState: true
+- assertVisible: "올해 남은 연차가 몇 개예요?"
+# 탭 1: 기본값 15일로 추천 보기
+- tapOn:
+    id: "onb_start"
+- assertVisible: "남은 연차 15일"
+- assertVisible:
+    id: "rec_card_0"
+# 탭 2: 효율 1위 카드 → 달력 미리보기
+- tapOn:
+    id: "rec_card_0"
+- assertVisible: "연차 .*일 → .*일 휴가"
+# 탭 3: 담기
+- tapOn:
+    id: "cal_preview_add"
+- assertVisible: "달력에 담았어요"
+- assertVisible: ".* · 연차( · .*)?"
+- tapOn: "되돌리기"
+- assertNotVisible: ".* · 연차( · .*)?"

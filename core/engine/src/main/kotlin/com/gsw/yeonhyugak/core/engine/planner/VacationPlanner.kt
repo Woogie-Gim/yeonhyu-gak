@@ -2,6 +2,7 @@ package com.gsw.yeonhyugak.core.engine.planner
 
 import java.time.Clock
 import java.time.LocalDate
+import java.time.Month
 
 // 추천 엔진. 현재 날짜는 주입받은 Clock에서만 읽는다
 class VacationPlanner(private val clock: Clock) {
@@ -9,6 +10,9 @@ class VacationPlanner(private val clock: Clock) {
 
     // 올해 남은 기간 칩
     fun remainingThisYear(): CandidateFilter = CandidateFilter(from = today())
+
+    // 11월 이후면 "내년 보기" 칩 강조
+    fun suggestsNextYear(): Boolean = today().month >= NEXT_YEAR_HINT_FROM
 
     // 비용 1~한도의 모든 극대 블록. 계획 연도 연차가 1일 이상 들어간 블록만
     fun candidates(
@@ -30,25 +34,14 @@ class VacationPlanner(private val clock: Clock) {
                 if (fitsBudget(block, year, budget) && filter.accepts(block)) result += block
             }
         }
-        return result.sortedWith(comparatorFor(sort))
+        return result.sortedWith(sort.comparator())
     }
 
     // 겹치지 않게 효율 순 탐욕 배치. 저장하지 않는 제안
-    fun autoPlan(year: Int, calendar: WorkCalendar, budget: LeaveBudget): List<VacationBlock> {
-        val used = mutableMapOf<Int, Int>()
-        val chosen = mutableListOf<VacationBlock>()
-        for (block in candidates(year, calendar, budget)) {
-            val fits = block.costByYear.all { (y, c) ->
-                used.getOrDefault(y, 0) + c <=
-                    budget.limitFor(y)
-            }
-            if (fits && chosen.none { it.overlaps(block) }) {
-                chosen += block
-                block.costByYear.forEach { (y, c) -> used.merge(y, c, Int::plus) }
-            }
-        }
-        return chosen.sortedBy { it.start }
-    }
+    fun autoPlan(year: Int, calendar: WorkCalendar, budget: LeaveBudget): List<VacationBlock> =
+        greedyPlan(candidates(year, calendar, budget), budget, { it.costByYear }) { a, b ->
+            a.overlaps(b)
+        }.sortedBy { it.start }
 
     // 남은 연차 0일 때: 연차 없이 minLength일 이상 쉬는 구간
     fun freeBreaks(
@@ -93,20 +86,29 @@ class VacationPlanner(private val clock: Clock) {
         return start.datesUntil(end.plusDays(1)).toList()
     }
 
-    private fun comparatorFor(sort: SortOrder): Comparator<VacationBlock> = when (sort) {
-        SortOrder.EFFICIENCY -> compareByDescending<VacationBlock> { it.efficiency }
-            .thenByDescending { it.totalDays }
-            .thenBy { it.start }
-
-        SortOrder.LENGTH -> compareByDescending<VacationBlock> { it.totalDays }
-            .thenByDescending { it.efficiency }
-            .thenBy { it.start }
-
-        SortOrder.DATE -> compareBy<VacationBlock> { it.start }.thenByDescending { it.totalDays }
-    }
-
     companion object {
         const val FREE_BREAK_MIN_DAYS = 3
+        private val NEXT_YEAR_HINT_FROM = Month.NOVEMBER
         private const val WINDOW_MARGIN_DAYS = 31L
     }
+}
+
+// 정렬된 후보를 앞에서부터 예산·겹침 안에서 고른다
+internal fun <T> greedyPlan(
+    sorted: List<T>,
+    budget: LeaveBudget,
+    costByYear: (T) -> Map<Int, Int>,
+    overlaps: (T, T) -> Boolean,
+): List<T> {
+    val used = mutableMapOf<Int, Int>()
+    val chosen = mutableListOf<T>()
+    for (item in sorted) {
+        val cost = costByYear(item)
+        val fits = cost.all { (y, c) -> used.getOrDefault(y, 0) + c <= budget.limitFor(y) }
+        if (fits && chosen.none { overlaps(it, item) }) {
+            chosen += item
+            cost.forEach { (y, c) -> used.merge(y, c, Int::plus) }
+        }
+    }
+    return chosen
 }

@@ -7,7 +7,6 @@ import com.gsw.yeonhyugak.core.engine.planner.WorkCalendar
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 // 연휴 띠 조각. labelHere = 이 칸에 `n일` 라벨
@@ -29,6 +28,8 @@ data class DayCell(
     // 연차를 지정할 수 있는 날
     val isWorkday: Boolean,
     val band: BlockBand?,
+    // 담기 전 미리보기 연차
+    val isPreview: Boolean = false,
 ) {
     val isHoliday: Boolean get() = holidays.isNotEmpty()
 
@@ -45,18 +46,20 @@ data class MonthGrid(val month: YearMonth, val weeks: List<List<DayCell>>) {
 
     companion object {
         const val WEEKS = 6
-        const val MIN_BLOCK_DAYS = 3
+        const val MIN_BLOCK_DAYS = VacationSpan.MIN_DAYS
         private const val DAYS_IN_WEEK = 7
 
         // 일요일 시작 6주 그리드. work에는 bookedLeave를 넣지 않는다
+        // preview = 담기 전 연차. 띠 계산에 포함
         fun build(
             month: YearMonth,
             holidays: HolidayCalendar,
             work: WorkCalendar,
             leaves: Map<LocalDate, LeaveType>,
+            preview: Set<LocalDate> = emptySet(),
         ): MonthGrid {
             val first = month.atDay(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-            val off = DayOff(work, leaves)
+            val span = { d: LocalDate -> VacationSpan.around(d, work, leaves, preview) }
             val cells = (0 until WEEKS * DAYS_IN_WEEK).map { i ->
                 val date = first.plusDays(i.toLong())
                 val inMonth = YearMonth.from(date) == month
@@ -66,16 +69,19 @@ data class MonthGrid(val month: YearMonth, val weeks: List<List<DayCell>>) {
                     holidays = if (inMonth) holidays.on(date) else emptyList(),
                     leave = if (inMonth) leaves[date] else null,
                     isWorkday = inMonth && work.isWorkday(date),
-                    band = if (inMonth) bandOf(date, month, off) else null,
+                    band = if (inMonth) bandOf(date, month, span(date)) else null,
+                    isPreview = inMonth && date in preview && leaves[date] != LeaveType.FULL,
                 )
             }
             return MonthGrid(month, cells.chunked(DAYS_IN_WEEK))
         }
 
-        private fun bandOf(date: LocalDate, month: YearMonth, off: DayOff): BlockBand? {
-            val run = off.runAround(date)
-            val length =
-                run?.let { ChronoUnit.DAYS.between(it.start, it.endInclusive).toInt() + 1 } ?: 0
+        private fun bandOf(
+            date: LocalDate,
+            month: YearMonth,
+            run: ClosedRange<LocalDate>?,
+        ): BlockBand? {
+            val length = run?.let(VacationSpan::length) ?: 0
             // 블록이 지난달에 시작했으면 이달 첫 칸에 라벨
             return run?.takeIf { length >= MIN_BLOCK_DAYS }?.let {
                 val isStart = date == it.start

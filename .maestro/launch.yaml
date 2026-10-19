@@ -5,3 +5,6 @@ appId: com.gsw.yeonhyugak.debug
     clearState: true
 - assertVisible:
     id: "yh_root"
+# 첫 실행은 온보딩 질문 하나
+- assertVisible:
+    id: "onb_root"

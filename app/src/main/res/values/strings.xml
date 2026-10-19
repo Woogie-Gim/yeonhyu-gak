@@ -5,11 +5,4 @@
     <string name="tab_calendar">달력</string>
     <string name="tab_recommend">추천</string>
     <string name="tab_leave">내 연차</string>
-
-    <!-- 빈 화면: 다음 행동 제안 -->
-    <string name="empty_recommend_title">추천은 곧 열려요</string>
-    <string name="empty_recommend_body">지금은 달력에서 쉬고 싶은 날을 직접 그어 보세요</string>
-    <string name="empty_leave_title">아직 담은 연휴가 없어요</string>
-    <string name="empty_leave_body">달력에서 날짜를 눌러 연차를 지정해 보세요</string>
-    <string name="empty_go_calendar">달력으로 가기</string>
 </resources>

@@ -1,0 +1,33 @@
+<resources>
+    <string name="leave_remaining_label">올해 남은 연차</string>
+    <string name="leave_days">%1$s일</string>
+    <string name="leave_over">%1$s일 더 썼어요</string>
+    <string name="leave_summary">올해 연차 %1$s일 중 %2$s일 지정</string>
+    <string name="leave_edit">남은 개수 고치기</string>
+    <string name="leave_edit_title">남은 연차를 몇 개로 할까요?</string>
+    <string name="leave_edit_minus">반나절 줄이기</string>
+    <string name="leave_edit_plus">반나절 늘리기</string>
+    <string name="leave_edit_save">저장</string>
+    <string name="leave_edit_cancel">취소</string>
+    <string name="leave_done_edit">남은 연차를 고쳤어요</string>
+    <string name="leave_undo">되돌리기</string>
+    <string name="leave_expiry">올해 연차는 %1$d년 %2$d월 %3$d일에 사라져요</string>
+    <string name="leave_reference">참고용 계산이에요. 회사 규정이 우선이에요</string>
+    <string name="leave_history">사용 기록</string>
+    <string name="leave_record">%1$d월 %2$d일(%3$s) · %4$s</string>
+    <string name="leave_type_full">연차</string>
+    <string name="leave_type_am">오전 반차</string>
+    <string name="leave_type_pm">오후 반차</string>
+    <string name="leave_empty">아직 담은 연휴가 없어요. 추천에서 골라볼까요?</string>
+    <string name="leave_go_recommend">추천 보기</string>
+
+    <string-array name="leave_weekday_short">
+        <item>일</item>
+        <item>월</item>
+        <item>화</item>
+        <item>수</item>
+        <item>목</item>
+        <item>금</item>
+        <item>토</item>
+    </string-array>
+</resources>

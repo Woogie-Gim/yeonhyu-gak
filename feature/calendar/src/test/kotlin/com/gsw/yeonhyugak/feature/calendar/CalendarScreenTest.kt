@@ -87,7 +87,8 @@ class CalendarScreenTest {
             listOf(may(7), may(8), may(11)).associateWith { LeaveType.FULL },
             harness.leaveMap(),
         )
-        rule.onNodeWithText("연차 3일을 지정했어요").assertExists()
+        // 스낵바는 저장 직후 이벤트로 뜬다
+        rule.waitUntil(TIMEOUT) { textShown("연차 3일을 지정했어요") }
     }
 
     @Test
@@ -212,7 +213,49 @@ class CalendarScreenTest {
         assertTrue(description(may(7)).contains("근무일"))
     }
 
+    // 추천 미리보기: 5/7~5/8 → 5/7(목)~5/10(일) 4일. 바 일수 = 띠 일수
+    @Test
+    fun preview_showsBandAndAddsWithUndo() {
+        harness.preview.show(listOf(may(7), may(8)))
+        rule.waitUntil(TIMEOUT) { previewSummaryExists() }
+        rule.onNodeWithTag(CALENDAR_PREVIEW_SUMMARY_TAG).assert(hasText("연차 2일 → 4일 휴가"))
+        assertTrue(description(may(7)).contains("담기 전 미리보기"))
+        assertTrue(description(may(10)).contains("4일 연휴"))
+        assertTrue(harness.leaveMap().isEmpty())
+
+        // 미리보기 중 탭은 지정하지 않는다
+        cell(may(12)).performClick()
+        rule.waitForIdle()
+        assertTrue(harness.leaveMap().isEmpty())
+
+        rule.onNodeWithTag(CALENDAR_PREVIEW_ADD_TAG).performClick()
+        rule.waitUntil(TIMEOUT) { harness.leaveMap().size == 2 }
+        // 스낵바는 저장 직후 이벤트로 뜬다
+        rule.waitUntil(TIMEOUT) { textShown("달력에 담았어요") }
+        assertTrue(description(may(10)).contains("4일 연휴"))
+        assertEquals(null, harness.preview.preview.value)
+
+        rule.onNodeWithText("되돌리기").performClick()
+        rule.waitUntil(TIMEOUT) { harness.leaveMap().isEmpty() }
+    }
+
+    @Test
+    fun preview_cancelSavesNothing() {
+        harness.preview.show(listOf(may(7)))
+        rule.waitUntil(TIMEOUT) { previewSummaryExists() }
+        rule.onNodeWithTag(CALENDAR_PREVIEW_CANCEL_TAG).performClick()
+        rule.waitUntil(TIMEOUT) { !previewSummaryExists() }
+        assertTrue(harness.leaveMap().isEmpty())
+        assertFalse(description(may(7)).contains("담기 전 미리보기"))
+    }
+
     // --- 도우미 ---
+
+    private fun textShown(text: String): Boolean =
+        rule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+
+    private fun previewSummaryExists(): Boolean =
+        rule.onAllNodes(hasTestTag(CALENDAR_PREVIEW_SUMMARY_TAG)).fetchSemanticsNodes().isNotEmpty()
 
     private fun cell(date: LocalDate): SemanticsNodeInteraction = rule.onNodeWithTag(cellTag(date))
 

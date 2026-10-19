@@ -1,11 +1,15 @@
 package com.gsw.yeonhyugak.core.engine.property
 
 import com.gsw.yeonhyugak.core.engine.calendar.RangeSelection
+import com.gsw.yeonhyugak.core.engine.calendar.VacationSpan
 import com.gsw.yeonhyugak.core.engine.holiday.ExpectedHolidayGenerator
 import com.gsw.yeonhyugak.core.engine.holiday.HolidayKind
 import com.gsw.yeonhyugak.core.engine.leave.AccrualResult
 import com.gsw.yeonhyugak.core.engine.leave.LeaveAccrualCalculator
 import com.gsw.yeonhyugak.core.engine.leave.LeaveBasis
+import com.gsw.yeonhyugak.core.engine.leave.LeaveType
+import com.gsw.yeonhyugak.core.engine.planner.RecommendPeriod
+import com.gsw.yeonhyugak.core.engine.planner.Recommender
 import com.gsw.yeonhyugak.core.engine.planner.VacationPlanner
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.doubles.shouldBeGreaterThanOrEqual
@@ -133,6 +137,28 @@ class EngineInvariantsTest :
                 s.leaveDates.all { it in start..end } shouldBe true
                 s.totalDays shouldBeGreaterThanOrEqual len + 1
                 s.overBy shouldBeLessThanOrEqual s.cost
+            }
+        }
+
+        test("10. 추천 카드 구간 = 담은 뒤 달력 연휴 구간, 비용 ≤ 이미 쓴 만큼 뺀 연차") {
+            checkAll(n, Generators.planInput) { (year, cal, budget) ->
+                val clock = Clock.fixed(
+                    LocalDate.of(year, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC),
+                    ZoneOffset.UTC,
+                )
+                val rec = Recommender(VacationPlanner(clock))
+                // 생성된 bookedLeave를 달력 연차로 옮긴다
+                val leaves = cal.bookedLeave.associateWith { LeaveType.FULL }
+                val work = cal.copy(bookedLeave = emptySet())
+                val allowance = budget.remainingByYear.getValue(year)
+                val usedThisYear = leaves.keys.count { it.year == year }
+                rec.recommend(RecommendPeriod.REST_OF_YEAR, work, leaves, allowance).forEach { r ->
+                    val after = leaves + r.leaveDates.associateWith { LeaveType.FULL }
+                    VacationSpan.around(r.leaveDates.first(), work, after) shouldBe r.span
+                    r.totalDays shouldBeGreaterThanOrEqual VacationSpan.MIN_DAYS
+                    (r.costByYear[year] ?: 0).toDouble() shouldBeLessThanOrEqual
+                        (allowance - usedThisYear).coerceAtLeast(0.0)
+                }
             }
         }
     })

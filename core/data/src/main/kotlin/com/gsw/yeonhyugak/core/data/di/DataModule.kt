@@ -9,6 +9,8 @@ import androidx.room.Room
 import com.gsw.yeonhyugak.core.data.db.YhDatabase
 import com.gsw.yeonhyugak.core.data.holiday.HolidayOverrideSource
 import com.gsw.yeonhyugak.core.data.holiday.NoHolidayOverrides
+import com.gsw.yeonhyugak.core.engine.planner.Recommender
+import com.gsw.yeonhyugak.core.engine.planner.VacationPlanner
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -40,6 +42,10 @@ object DataModule {
 
     @Provides
     fun clock(): Clock = Clock.systemDefaultZone()
+
+    // 엔진은 순수 Kotlin이라 여기서 Clock을 넣어 만든다
+    @Provides
+    fun recommender(clock: Clock): Recommender = Recommender(VacationPlanner(clock))
 
     @Provides
     @IoDispatcher

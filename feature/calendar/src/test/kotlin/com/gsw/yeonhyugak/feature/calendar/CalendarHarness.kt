@@ -12,6 +12,7 @@ import com.gsw.yeonhyugak.core.data.db.YhDatabase
 import com.gsw.yeonhyugak.core.data.holiday.HolidayRepository
 import com.gsw.yeonhyugak.core.data.leave.LeaveRepository
 import com.gsw.yeonhyugak.core.data.memo.MemoRepository
+import com.gsw.yeonhyugak.core.data.plan.PlanPreviewStore
 import com.gsw.yeonhyugak.core.data.prefs.UserPrefsRepository
 import com.gsw.yeonhyugak.core.engine.holiday.Holiday
 import com.gsw.yeonhyugak.core.engine.holiday.HolidayKind
@@ -39,6 +40,7 @@ class CalendarHarness(coachMarkShown: Boolean = true) {
     val leaves = LeaveRepository(db)
     val memos = MemoRepository(db, clock)
     val prefs = UserPrefsRepository(PreferenceDataStoreFactory.create { prefsFile })
+    val preview = PlanPreviewStore()
     private val holidays = HolidayRepository(
         context,
         { HolidayOverrides(add = listOf(REMOTE_ELECTION)) },
@@ -55,7 +57,7 @@ class CalendarHarness(coachMarkShown: Boolean = true) {
     fun viewModel(): CalendarViewModel = ViewModelProvider.create(
         store,
         viewModelFactory {
-            initializer { CalendarViewModel(holidays, leaves, memos, prefs, clock) }
+            initializer { CalendarViewModel(holidays, leaves, memos, prefs, preview, clock) }
         },
     )[CalendarViewModel::class]
 

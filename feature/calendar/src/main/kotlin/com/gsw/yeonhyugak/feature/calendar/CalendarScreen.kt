@@ -54,6 +54,7 @@ import com.gsw.yeonhyugak.core.engine.SupportedYears
 import com.gsw.yeonhyugak.core.engine.calendar.MonthGrid
 import com.gsw.yeonhyugak.core.engine.calendar.RangeSummary
 import com.gsw.yeonhyugak.core.engine.holiday.Holiday
+import com.gsw.yeonhyugak.core.ui.DayCount
 import com.gsw.yeonhyugak.core.ui.rememberReduceMotion
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
 import java.time.LocalDate
@@ -206,22 +207,18 @@ private fun CalendarScreen(
 
     // 애니메이션 줄이기면 바로 이동
     fun goTo(target: YearMonth) = scope.launch {
-        if (reduceMotion) {
-            pagerState.scrollToPage(
-                pageOf(target),
-            )
-        } else {
-            pagerState.animateScrollToPage(pageOf(target))
-        }
+        val page = pageOf(target)
+        if (reduceMotion) pagerState.scrollToPage(page) else pagerState.animateScrollToPage(page)
     }
 
     val selection = drag.range
-    val summary = remember(selection, state.leaves, state.holidays, state.allowance) {
-        selection?.takeIf {
-            it.start != it.endInclusive
-        }?.let { state.summarize(it.start, it.endInclusive) }
-    }
+    val summary = rememberRangeSummary(selection, state)
     val callbacks = rememberGridCallbacks(state, viewModel, drag)
+
+    // 추천 카드에서 오면 미리보기 첫 날짜가 있는 달로 이동
+    LaunchedEffect(state.preview?.focus) {
+        state.preview?.focus?.let { goTo(YearMonth.from(it)) }
+    }
 
     Column(modifier.fillMaxSize()) {
         // 말풍선은 제목 위에 띄운다. 자리를 차지하지 않아 달력이 밀리지 않음
@@ -254,7 +251,7 @@ private fun CalendarScreen(
                 )
             }
         }
-        CoachMarkSlot(visible = state.coachMarkVisible, onDismiss = viewModel::dismissCoachMark)
+        BottomSlot(state, viewModel)
     }
 
     DaySheetHost(state, viewModel)
@@ -271,6 +268,16 @@ private fun CalendarScreen(
     }
 }
 
+// 드래그 중 말풍선 요약. 한 칸만 누른 상태는 요약 없음
+@Composable
+private fun rememberRangeSummary(
+    selection: ClosedRange<LocalDate>?,
+    state: CalendarUiState,
+): RangeSummary? = remember(selection, state.leaves, state.holidays, state.allowance) {
+    selection?.takeIf { it.start != it.endInclusive }
+        ?.let { state.summarize(it.start, it.endInclusive) }
+}
+
 @Composable
 private fun rememberGridCallbacks(
     state: CalendarUiState,
@@ -278,6 +285,8 @@ private fun rememberGridCallbacks(
     drag: DragSelection,
 ): GridCallbacks {
     val haptic = LocalHapticFeedback.current
+    // 미리보기 중에는 지정하지 않는다. 월 넘김만 허용
+    if (state.preview != null) return PreviewOnlyCallbacks
     return GridCallbacks(
         onTap = { date ->
             val marked = date in state.leaves
@@ -308,6 +317,17 @@ private fun rememberGridCallbacks(
     )
 }
 
+private val PreviewOnlyCallbacks = GridCallbacks(
+    onTap = {},
+    onLongPress = {},
+    onDragStart = {},
+    onDragMove = {},
+    onDragEnd = { _, _ -> },
+    onDragCancel = {},
+    onRangeFrom = {},
+    onRangeTo = {},
+)
+
 @Composable
 private fun DaySheetHost(state: CalendarUiState, viewModel: CalendarViewModel) {
     val sheet = state.sheet ?: return
@@ -334,7 +354,8 @@ private fun MonthPage(
     selection: ClosedRange<LocalDate>?,
     callbacks: GridCallbacks,
 ) {
-    val grid = remember(month, state.holidays, state.leaves) { state.grid(month) } ?: return
+    val grid =
+        remember(month, state.holidays, state.leaves, state.preview) { state.grid(month) } ?: return
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // 칸 높이는 48dp 이상 유지. 화면이 모자라면 세로 스크롤
         val rowHeight: Dp = maxOf(MIN_ROW, maxHeight / MonthGrid.WEEKS)

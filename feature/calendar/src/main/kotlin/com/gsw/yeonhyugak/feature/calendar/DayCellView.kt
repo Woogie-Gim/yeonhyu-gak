@@ -19,8 +19,10 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -71,6 +73,7 @@ internal fun DayCellView(
                 .padding(horizontal = 2.dp),
         ) {
             LeaveFill(cell.leave)
+            if (cell.isPreview) PreviewFill(colors.accent)
             if (cell.isExpectedHoliday) ExpectedBorder(colors.holiday)
             if (selected) {
                 Box(Modifier.fillMaxSize().border(2.dp, colors.accent, CellShape))
@@ -145,6 +148,33 @@ private fun LeaveFill(leave: LeaveType?) {
 
         null -> Unit
     }
+}
+
+// 담기 전 미리보기: 옅은 채움 + 빗금 + 실선 테두리 (색만으로 구분하지 않음)
+@Composable
+private fun PreviewFill(color: Color) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(color.copy(alpha = PREVIEW_FILL_ALPHA), CellShape)
+            .border(1.5.dp, color, CellShape)
+            // 빗금이 옆 칸으로 넘치지 않게
+            .clip(CellShape)
+            .drawBehind {
+                val gap = 6.dp.toPx()
+                val stroke = 1.dp.toPx()
+                var x = -size.height
+                while (x < size.width) {
+                    drawLine(
+                        color = color.copy(alpha = PREVIEW_HATCH_ALPHA),
+                        start = Offset(x, size.height),
+                        end = Offset(x + size.height, 0f),
+                        strokeWidth = stroke,
+                    )
+                    x += gap
+                }
+            },
+    )
 }
 
 // 예상 공휴일: 점선 테두리
@@ -240,3 +270,5 @@ private const val LABEL_WEIGHT = 0.5f
 private const val GAP_WEIGHT = 0.25f
 private const val HALF = 0.5f
 private const val HALF_FILL_ALPHA = 0.45f
+private const val PREVIEW_FILL_ALPHA = 0.18f
+private const val PREVIEW_HATCH_ALPHA = 0.5f

@@ -3,6 +3,11 @@ appId: com.gsw.yeonhyugak.debug
 ---
 - launchApp:
     clearState: true
+# 첫 실행 온보딩은 기본값으로 넘기고 달력 탭으로
+- tapOn:
+    id: "onb_start"
+- tapOn:
+    id: "tab_calendar"
 - runScript: scripts/pick_week.js
 - assertVisible:
     id: ${output.startCell}

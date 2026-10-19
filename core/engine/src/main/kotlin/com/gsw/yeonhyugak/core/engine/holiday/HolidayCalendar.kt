@@ -34,6 +34,10 @@ class HolidayCalendar(
 
     fun on(date: LocalDate): List<Holiday> = byDate[date].orEmpty()
 
+    // 구간 안 공휴일. 추천 카드 연휴 이름용
+    fun within(range: ClosedRange<LocalDate>): List<Holiday> =
+        range.start.datesUntil(range.endInclusive.plusDays(1)).toList().flatMap(::on)
+
     fun isHoliday(date: LocalDate): Boolean = date in byDate
 
     // 예상 배지 대상 연도
