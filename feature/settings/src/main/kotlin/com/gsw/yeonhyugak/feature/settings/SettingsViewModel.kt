@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsw.yeonhyugak.core.data.holiday.HolidayRepository
 import com.gsw.yeonhyugak.core.data.leave.LeaveRepository
+import com.gsw.yeonhyugak.core.data.prefs.AlertPrefsRepository
 import com.gsw.yeonhyugak.core.data.prefs.UserPrefsRepository
 import com.gsw.yeonhyugak.core.engine.appearance.Appearance
 import com.gsw.yeonhyugak.core.engine.appearance.CheerColor
@@ -23,7 +24,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -33,6 +33,8 @@ data class SettingsUiState(
     val appearance: Appearance = Appearance(),
     val holidays: HolidayCalendar? = null,
     val leaves: Map<LocalDate, LeaveType> = emptyMap(),
+    val shareQr: Boolean = true,
+    val notifyOn: Boolean = false,
 ) {
     // 테마 카드 미리보기: 내 실제 달력
     fun grid(month: YearMonth): MonthGrid? = holidays?.let {
@@ -50,6 +52,7 @@ sealed interface SettingsEvent {
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val prefs: UserPrefsRepository,
+    private val alertPrefs: AlertPrefsRepository,
     holidayRepo: HolidayRepository,
     leaveRepo: LeaveRepository,
     clock: Clock,
@@ -60,12 +63,14 @@ class SettingsViewModel @Inject constructor(
     val eventFlow: Flow<SettingsEvent> = events.receiveAsFlow()
 
     val state: StateFlow<SettingsUiState> =
-        combine(prefs.appearance, flow { emit(holidayRepo.calendar()) }, leaveRepo.observe()) {
-                appearance,
-                holidays,
-                leaves,
-            ->
-            SettingsUiState(today, appearance, holidays, leaves)
+        combine(
+            prefs.appearance,
+            holidayRepo.observe(),
+            leaveRepo.observe(),
+            prefs.shareQr,
+            alertPrefs.notifyOn,
+        ) { appearance, holidays, leaves, qr, notify ->
+            SettingsUiState(today, appearance, holidays, leaves, qr, notify)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_MS), SettingsUiState(today))
 
     // 탭 즉시 적용. 같은 테마면 아무 일 없음
@@ -86,6 +91,11 @@ class SettingsViewModel @Inject constructor(
     fun setSound(mode: SoundMode) = viewModelScope.launch { prefs.setSound(mode) }
 
     fun setHaptic(on: Boolean) = viewModelScope.launch { prefs.setHaptic(on) }
+
+    fun setShareQr(on: Boolean) = viewModelScope.launch { prefs.setShareQr(on) }
+
+    // 켜기는 시스템 권한을 받은 뒤에만 호출된다
+    fun setNotify(on: Boolean) = viewModelScope.launch { alertPrefs.setNotify(on) }
 
     private companion object {
         const val STOP_MS = 5_000L

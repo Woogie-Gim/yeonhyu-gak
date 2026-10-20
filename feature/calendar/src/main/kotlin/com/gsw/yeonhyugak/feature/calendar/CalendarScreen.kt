@@ -86,6 +86,8 @@ const val CALENDAR_BUBBLE_TAG = "cal_bubble"
 const val CALENDAR_COACH_TAG = "cal_coach"
 const val CALENDAR_PAGER_TAG = "cal_pager"
 const val CALENDAR_SETTINGS_TAG = "cal_settings"
+const val CALENDAR_SHARE_TAG = "cal_share"
+const val NOTIFY_ASK_TAG = "cal_notify_ask"
 
 private const val UNDO_MS = 5_000L
 private const val TIP_MS = 2_500L
@@ -125,12 +127,14 @@ fun CalendarRoute(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit = {},
+    onOpenShare: (year: Int) -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val res = LocalResources.current
     val a11y = LocalAccessibilityManager.current
     var tip by remember { mutableStateOf<Tip?>(null) }
+    var askNotify by remember { mutableStateOf(false) }
     val undoLabel = stringResource(R.string.cal_undo)
     val theme = YhTheme.spec.id
     val feedback = rememberYhFeedback()
@@ -160,6 +164,8 @@ fun CalendarRoute(
                 CalendarEvent.WeekendTip -> tip = Tip.Weekend
 
                 is CalendarEvent.AnchorTip -> tip = null
+
+                CalendarEvent.AskNotify -> askNotify = true
             }
         }
     }
@@ -175,9 +181,18 @@ fun CalendarRoute(
         tip = tip,
         onShowExpectedTip = { tip = Tip.Expected },
         onOpenSettings = onOpenSettings,
+        onOpenShare = onOpenShare,
         viewModel = viewModel,
         modifier = modifier,
     )
+    if (askNotify) {
+        NotifyAskDialog(
+            onAnswer = { on ->
+                askNotify = false
+                viewModel.links.answerNotify(on)
+            },
+        )
+    }
 }
 
 // 변경 스낵바 5초. TalkBack 사용자는 권장 시간만큼 더 길게. 되돌리기를 누르면 true
@@ -237,6 +252,7 @@ private fun CalendarScreen(
     tip: Tip?,
     onShowExpectedTip: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenShare: (year: Int) -> Unit,
     viewModel: CalendarViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -264,6 +280,8 @@ private fun CalendarScreen(
         state.preview?.focus?.let { goTo(YearMonth.from(it)) }
     }
 
+    OpenDateEffect(viewModel.links) { goTo(it) }
+
     Column(modifier.fillMaxSize()) {
         // 말풍선은 제목 위에 띄운다. 자리를 차지하지 않아 달력이 밀리지 않음
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -274,6 +292,7 @@ private fun CalendarScreen(
                 onExpected = onShowExpectedTip,
                 onToday = { goTo(YearMonth.from(state.today)) },
                 onSettings = onOpenSettings,
+                onShare = { onOpenShare(month.year) },
             )
             Bubble(
                 text = bubbleText(summary, state.rangeAnchor, tip),
@@ -425,6 +444,7 @@ private fun MonthPage(
                 grid = grid,
                 today = state.today,
                 memoDates = state.memoDates,
+                newHolidayDates = state.newHolidayDates,
                 selection = selection,
                 rowHeight = rowHeight,
                 callbacks = callbacks,

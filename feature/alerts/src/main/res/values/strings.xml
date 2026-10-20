@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 알림 채널 -->
+    <string name="alert_channel_plan">연휴 알림</string>
+    <string name="alert_channel_plan_desc">담은 연휴 3주 전과 연차 소멸 30일 전에 알려드려요</string>
+    <string name="alert_channel_holiday">공휴일 소식</string>
+    <string name="alert_channel_holiday_desc">임시공휴일·선거일이 새로 생기면 알려드려요</string>
+
+    <!-- 연휴 D-21 -->
+    <string name="alert_break_title">연휴까지 %1$d일 남았어요</string>
+    <string name="alert_break_text">%1$s부터 %2$d일 쉬어요. 숙소와 교통을 미리 챙겨보세요</string>
+
+    <!-- 연차 소멸 D-30 -->
+    <string name="alert_expiry_title">연차가 %1$d일 뒤 사라져요</string>
+    <string name="alert_expiry_text">%1$s에 사라져요. 남은 연차를 확인해 보세요</string>
+
+    <!-- 새 공휴일 -->
+    <string name="alert_new_holiday_title">새 공휴일이 생겼어요</string>
+    <string name="alert_new_holiday_one">%1$s %2$s. 달력에 표시해 뒀어요</string>
+    <string name="alert_new_holiday_many">%1$s %2$s 외 %3$d일. 달력에 표시해 뒀어요</string>
+
+    <!-- 개발자 메뉴 강제 발송 -->
+    <string name="alert_test_title">알림 시험</string>
+    <string name="alert_test_text">지금 보낼 알림이 없어서 시험 알림을 보냈어요</string>
+</resources>

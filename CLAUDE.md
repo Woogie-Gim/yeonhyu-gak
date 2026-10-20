@@ -20,7 +20,8 @@
 - Kotlin · Jetpack Compose · Material 3 · minSdk 26 · targetSdk 최신
 - 모듈: `:core:engine`(순수 Kotlin, 안드로이드 의존 금지) · `:core:data` · `:core:ui`(테마 토큰·공용 UI) · `:feature:*` · `:app`
 - 저장: Room(연차 기록) + DataStore(설정·테마)
-- 위젯: Glance · 알림: WorkManager · 광고: AdMob + UMP
+- 위젯: Glance · 알림: WorkManager(정확한 알람 권한 없음) · 광고: AdMob + UMP
+- 공유 카드 QR: zxing core · 원격 공휴일: HttpURLConnection (테스트는 MockWebServer)
 - DI: Hilt · 비동기: Coroutines/Flow
 
 ## 코드 규칙
@@ -36,6 +37,7 @@
 ./gradlew ktlintCheck detekt lint
 ./gradlew :core:engine:test          # 엔진 단위·속성 테스트
 ./gradlew testDebugUnitTest          # 나머지 단위 테스트
+./gradlew :app:testReleaseUnitTest --tests "*DevMenuReleaseTest*"   # 릴리스에 개발자 메뉴 없음
 ./gradlew verifyRoborazziDebug       # 테마별 스크린샷 회귀
 ```
 - 실패하면 원인을 고치고 다시 실행한다. 테스트를 삭제하거나 `@Ignore`로 우회 금지.

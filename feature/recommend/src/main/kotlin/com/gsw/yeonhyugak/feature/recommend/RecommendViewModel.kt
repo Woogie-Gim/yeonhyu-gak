@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -76,7 +75,7 @@ class RecommendViewModel @Inject constructor(
 
     val state: StateFlow<RecommendUiState> =
         combine(
-            flow { emit(holidayRepo.calendar()) },
+            holidayRepo.observe(),
             leaveRepo.observe(),
             prefs.allowance,
             choice,

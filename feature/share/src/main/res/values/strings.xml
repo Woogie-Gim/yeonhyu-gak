@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 공유 시트 -->
+    <string name="share_title">공유 카드</string>
+    <string name="share_ratio_feed">피드 4:5</string>
+    <string name="share_ratio_story">스토리 9:16</string>
+    <string name="share_action">공유하기</string>
+    <string name="share_chooser">공유 카드 보내기</string>
+    <string name="share_error">카드를 만들지 못했어요. 다시 눌러 주세요</string>
+    <string name="share_privacy_note">메모와 입사일은 카드에 넣지 않아요</string>
+
+    <!-- 카드 -->
+    <string name="share_card_title">%1$d년 연휴</string>
+    <string name="share_card_expected">예상</string>
+    <string name="share_card_summary">총 %1$d일 쉬어요 · 연차 %2$s일</string>
+    <string name="share_card_range">%1$s ~ %2$s</string>
+    <string name="share_card_days">%1$d일</string>
+    <string name="share_card_more">외 %1$d개 연휴</string>
+    <string name="share_card_date">M월 d일(E)</string>
+    <string name="share_card_qr">플레이 스토어에서 받기 QR 코드</string>
+</resources>

@@ -2,6 +2,7 @@ package com.gsw.yeonhyugak.ui
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
@@ -14,7 +15,9 @@ import com.gsw.yeonhyugak.core.data.holiday.HolidayRepository
 import com.gsw.yeonhyugak.core.data.holiday.NoHolidayOverrides
 import com.gsw.yeonhyugak.core.data.leave.LeaveRepository
 import com.gsw.yeonhyugak.core.data.memo.MemoRepository
+import com.gsw.yeonhyugak.core.data.nav.OpenDateStore
 import com.gsw.yeonhyugak.core.data.plan.PlanPreviewStore
+import com.gsw.yeonhyugak.core.data.prefs.AlertPrefsRepository
 import com.gsw.yeonhyugak.core.data.prefs.UserPrefsRepository
 import com.gsw.yeonhyugak.core.engine.appearance.Appearance
 import com.gsw.yeonhyugak.core.engine.appearance.CheerColor
@@ -22,6 +25,9 @@ import com.gsw.yeonhyugak.core.engine.appearance.ThemeId
 import com.gsw.yeonhyugak.core.engine.leave.LeaveType
 import com.gsw.yeonhyugak.core.engine.planner.Recommender
 import com.gsw.yeonhyugak.core.engine.planner.VacationPlanner
+import com.gsw.yeonhyugak.core.ui.LocalNotificationPermission
+import com.gsw.yeonhyugak.core.ui.NotificationPermissionRequester
+import com.gsw.yeonhyugak.dev.DevMenu
 import com.gsw.yeonhyugak.feature.calendar.CalendarRoute
 import com.gsw.yeonhyugak.feature.calendar.CalendarViewModel
 import com.gsw.yeonhyugak.feature.leave.LeaveRoute
@@ -32,6 +38,8 @@ import com.gsw.yeonhyugak.feature.recommend.onboarding.OnboardingRoute
 import com.gsw.yeonhyugak.feature.recommend.onboarding.OnboardingViewModel
 import com.gsw.yeonhyugak.feature.settings.SettingsRoute
 import com.gsw.yeonhyugak.feature.settings.SettingsViewModel
+import com.gsw.yeonhyugak.feature.share.ShareRoute
+import com.gsw.yeonhyugak.feature.share.ShareViewModel
 import java.io.File
 import java.time.Clock
 import java.time.LocalDate
@@ -42,7 +50,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 // 앱 전체 하네스: 실제 번들 공휴일 + 메모리 DB + 임시 DataStore + 고정 Clock
-class AppHarness(val today: LocalDate = MAY_6) {
+class AppHarness(val today: LocalDate = MAY_6, private val devMenu: DevMenu? = null) {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val db = Room.inMemoryDatabaseBuilder(context, YhDatabase::class.java)
         .allowMainThreadQueries()
@@ -53,20 +61,35 @@ class AppHarness(val today: LocalDate = MAY_6) {
 
     val leaves = LeaveRepository(db)
     val memos = MemoRepository(db, clock)
-    val prefs = UserPrefsRepository(PreferenceDataStoreFactory.create { prefsFile })
+    private val prefStore = PreferenceDataStoreFactory.create { prefsFile }
+    val prefs = UserPrefsRepository(prefStore)
+    val alertPrefs = AlertPrefsRepository(prefStore)
     val preview = PlanPreviewStore()
+    val openDates = OpenDateStore()
     private val holidays = HolidayRepository(context, NoHolidayOverrides(), Dispatchers.Unconfined)
     private val recommender = Recommender(VacationPlanner(clock))
 
     private val provider = ViewModelProvider.create(
         store,
         viewModelFactory {
-            initializer { CalendarViewModel(holidays, leaves, memos, prefs, preview, clock) }
+            initializer {
+                CalendarViewModel(
+                    holidays,
+                    leaves,
+                    memos,
+                    prefs,
+                    preview,
+                    openDates,
+                    alertPrefs,
+                    clock,
+                )
+            }
             initializer { RecommendViewModel(holidays, leaves, prefs, preview, recommender) }
             initializer { LeaveViewModel(leaves, prefs, clock) }
             initializer { OnboardingViewModel(prefs, clock) }
-            initializer { AppViewModel(prefs, clock) }
-            initializer { SettingsViewModel(prefs, holidays, leaves, clock) }
+            initializer { AppViewModel(prefs, clock, openDates) }
+            initializer { SettingsViewModel(prefs, alertPrefs, holidays, leaves, clock) }
+            initializer { ShareViewModel(holidays, leaves, prefs) }
         },
     )
 
@@ -74,10 +97,11 @@ class AppHarness(val today: LocalDate = MAY_6) {
         onboarding = {
             OnboardingRoute(onDone = it, viewModel = provider[OnboardingViewModel::class])
         },
-        calendar = { host, openSettings ->
+        calendar = { host, openSettings, openShare ->
             CalendarRoute(
                 snackbarHostState = host,
                 onOpenSettings = openSettings,
+                onOpenShare = openShare,
                 viewModel = provider[CalendarViewModel::class],
             )
         },
@@ -91,19 +115,40 @@ class AppHarness(val today: LocalDate = MAY_6) {
                 viewModel = provider[LeaveViewModel::class],
             )
         },
-        settings = { host, back ->
+        settings = { host, back, devMenu ->
             SettingsRoute(
                 snackbarHostState = host,
                 onBack = back,
+                devMenu = devMenu,
                 viewModel = provider[SettingsViewModel::class],
             )
         },
+        share = { year, dismiss ->
+            ShareRoute(
+                year = year,
+                onDismiss = dismiss,
+                viewModel = provider[ShareViewModel::class],
+            )
+        },
+        devMenu = devMenu,
     )
+
+    // 시스템 알림 권한 요청 횟수 (가짜)
+    var permissionRequests = 0
+        private set
+    var grantPermission = true
+
+    private val permission = NotificationPermissionRequester { done ->
+        permissionRequests++
+        done(grantPermission)
+    }
 
     // MainActivity와 같은 구성 (설정에서 읽은 테마 포함)
     @Composable
     fun App(dark: Boolean = false) {
-        AppRoot(provider[AppViewModel::class], screens, darkTheme = dark)
+        CompositionLocalProvider(LocalNotificationPermission provides permission) {
+            AppRoot(provider[AppViewModel::class], screens, darkTheme = dark)
+        }
     }
 
     fun appearance(): Appearance = runBlocking { prefs.appearance.first() }

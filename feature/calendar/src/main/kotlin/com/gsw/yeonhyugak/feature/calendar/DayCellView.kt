@@ -53,6 +53,7 @@ internal fun dayNumberTag(date: LocalDate): String = "cal_num_$date"
 private fun cellShape(): Shape = RoundedCornerShape(YhTheme.spec.cellStyle.corner)
 
 // 색 + 모양 이중 표기 (SPEC 6장). 메모는 점 하나, 내용은 그리지 않는다
+// 원격으로 새로 추가된 공휴일은 왼쪽 위 `N` 글자 (메모 점과 다른 모양)
 @Composable
 internal fun DayCellView(
     cell: DayCell,
@@ -60,6 +61,7 @@ internal fun DayCellView(
     hasMemo: Boolean,
     selected: Boolean,
     modifier: Modifier = Modifier,
+    isNew: Boolean = false,
 ) {
     val colors = YhTheme.colors
     val shape = cellShape()
@@ -91,6 +93,12 @@ internal fun DayCellView(
                 // 이름 영역은 항상 확보. 모든 칸의 숫자 위치를 맞춘다
                 Box(Modifier.weight(HOLIDAY_LABEL_WEIGHT).fillMaxWidth()) { HolidayLabel(cell) }
             }
+            if (isNew) {
+                NewBadge(
+                    onLeave = cell.leave == LeaveType.FULL,
+                    Modifier.align(Alignment.TopStart),
+                )
+            }
             if (hasMemo) {
                 Box(
                     Modifier
@@ -111,6 +119,22 @@ internal fun DayCellView(
         Spacer(Modifier.weight(GAP_WEIGHT))
     }
 }
+
+@Composable
+private fun NewBadge(onLeave: Boolean, modifier: Modifier) {
+    val colors = YhTheme.colors
+    BasicText(
+        text = "N",
+        style = TextStyle(
+            color = if (onLeave) colors.onLeaveFill else colors.holiday,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+        ),
+        modifier = modifier.padding(start = 3.dp, top = 1.dp).testTag(NEW_BADGE_TAG),
+    )
+}
+
+internal const val NEW_BADGE_TAG = "cal_new_badge"
 
 // 숫자 아래 공휴일 이름 축약 (색 + 글자)
 @Composable

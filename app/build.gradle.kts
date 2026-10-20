@@ -1,3 +1,5 @@
+import com.android.build.api.variant.HasHostTestsBuilder
+import com.android.build.api.variant.HostTestBuilder
 import java.util.Properties
 
 plugins {
@@ -22,6 +24,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 원격 공휴일 JSON. 테스트는 MockWebServer 주소로 대체
+        buildConfigField(
+            "String",
+            "HOLIDAY_OVERRIDE_URL",
+            "\"https://woogie-gim.github.io/yeonhyu-gak-pages/holidays_override.json\"",
+        )
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     signingConfigs {
@@ -49,6 +62,13 @@ android {
     }
 }
 
+// 릴리스 단위 테스트는 개발자 메뉴 미포함 검사용 (AGP 9 기본은 debug만)
+androidComponents {
+    beforeVariants(selector().withBuildType("release")) { variant ->
+        (variant as HasHostTestsBuilder).hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = true
+    }
+}
+
 dependencies {
     implementation(project(":core:engine"))
     implementation(project(":core:data"))
@@ -57,6 +77,9 @@ dependencies {
     implementation(project(":feature:recommend"))
     implementation(project(":feature:leave"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:share"))
+    implementation(project(":feature:widget"))
+    implementation(project(":feature:alerts"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)

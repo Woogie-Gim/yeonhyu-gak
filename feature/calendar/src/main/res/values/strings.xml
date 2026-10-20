@@ -7,6 +7,7 @@
     <string name="cal_expected_note">아직 발표 전이라 예상한 공휴일이에요</string>
     <string name="cal_today">오늘</string>
     <string name="cal_settings">설정</string>
+    <string name="cal_share">공유 카드 만들기</string>
     <string name="cal_year_picker_title">연도 고르기</string>
     <string name="cal_year_item">%1$d년</string>
     <string name="cal_year_item_expected">%1$d년 · 예상</string>
@@ -92,6 +93,7 @@
     <string name="cal_a11y_am">오전 반차</string>
     <string name="cal_a11y_pm">오후 반차</string>
     <string name="cal_a11y_memo">메모 있음</string>
+    <string name="cal_a11y_new_holiday">새로 추가된 공휴일</string>
     <string name="cal_a11y_today">오늘</string>
     <string name="cal_a11y_band">%1$d일 연휴</string>
     <string name="cal_a11y_selected">선택 중</string>
@@ -100,4 +102,10 @@
     <string name="cal_a11y_action_clear">연차 해제</string>
     <string name="cal_a11y_action_name">공휴일 이름 듣기</string>
     <string name="cal_a11y_action_options">연차·반차·메모 열기</string>
+
+    <!-- 첫 담기 직후 알림 동의 -->
+    <string name="cal_notify_title">연휴 3주 전에 알려드릴까요?</string>
+    <string name="cal_notify_body">숙소와 교통을 미리 챙길 수 있게 알려드려요. 설정에서 언제든 끌 수 있어요</string>
+    <string name="cal_notify_yes">알려주세요</string>
+    <string name="cal_notify_no">괜찮아요</string>
 </resources>

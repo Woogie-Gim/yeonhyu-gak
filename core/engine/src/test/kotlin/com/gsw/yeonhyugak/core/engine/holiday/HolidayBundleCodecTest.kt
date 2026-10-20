@@ -40,17 +40,39 @@ class HolidayBundleCodecTest :
             t[2025] shouldBe KnownLunarDates.Y2025
         }
 
-        test("원격 덮어쓰기 파싱") {
-            val o =
-                HolidayBundleCodec.parseOverrides(
+        test("원격 공휴일 파싱. 모르는 필드는 무시") {
+            val r =
+                HolidayBundleCodec.parseRemote(
                     """
-                    {"schemaVersion":1,
-                     "add":[{"date":"2028-04-12","name":"국회의원선거일","kind":"ELECTION"}],
-                     "remove":[{"date":"2028-05-01","name":"x"}]}
+                    {"version":3,"note":"x","holidays":[
+                     {"date":"2028-04-12","name":"국회의원선거일","kind":"ELECTION","memo":"?"}]}
                     """.trimIndent(),
                 )
-            o.add.single().source shouldBe HolidaySource.REMOTE
-            o.remove shouldBe setOf(LocalDate.of(2028, 5, 1) to "x")
+            r.version shouldBe 3
+            val h = r.holidays.single()
+            h.date shouldBe LocalDate.of(2028, 4, 12)
+            h.kind shouldBe HolidayKind.ELECTION
+            h.source shouldBe HolidaySource.REMOTE
+            r.toOverrides().add shouldBe listOf(h)
+        }
+
+        test("원격 스키마 위반은 파일 전체 거부") {
+            val bad =
+                listOf(
+                    """{"holidays":[]}""",
+                    """{"version":0,"holidays":[]}""",
+                    """{"version":1}""",
+                    remote("""{"date":"2028-04-12","name":"a"}"""),
+                    remote("""{"date":"2028-04-12","name":"a","kind":"WHAT"}"""),
+                    remote("""{"date":"2028/04/12","name":"a","kind":"ELECTION"}"""),
+                    remote("""{"date":"2036-01-01","name":"a","kind":"ELECTION"}"""),
+                    remote("""{"date":"2028-04-12","name":"","kind":"ELECTION"}"""),
+                    remote(
+                        """{"date":"2028-04-12","name":"a","kind":"ELECTION"},""" +
+                            """{"date":"2028-04-12","name":"a","kind":"TEMPORARY"}""",
+                    ),
+                )
+            bad.forEach { shouldThrow<HolidayDataException> { HolidayBundleCodec.parseRemote(it) } }
         }
 
         test("잘못된 데이터는 HolidayDataException") {
@@ -71,6 +93,8 @@ class HolidayBundleCodecTest :
             bad.forEach { shouldThrow<HolidayDataException> { HolidayBundleCodec.parseBundle(it) } }
         }
     })
+
+private fun remote(holidays: String) = """{"version":1,"holidays":[$holidays]}"""
 
 private fun year2025(holidays: String) =
     """{"schemaVersion":1,"years":{"2025":{"confirmed":true,"holidays":[$holidays]}}}"""

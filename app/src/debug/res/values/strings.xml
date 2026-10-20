@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 디버그 빌드 전용. 릴리스 리소스에는 들어가지 않는다 -->
+<resources>
+    <string name="dev_menu_title">개발자 메뉴</string>
+    <string name="dev_menu_note">디버그 빌드에서만 보여요</string>
+    <string name="dev_send_alerts">알림 지금 보내기</string>
+    <string name="dev_send_alerts_desc">오늘 보낼 알림을 바로 보내요. 없으면 시험 알림을 보내요</string>
+    <string name="dev_sync_holidays">원격 공휴일 지금 받기</string>
+    <string name="dev_sync_holidays_desc">holidays_override.json을 바로 받아 달력에 반영해요</string>
+    <string name="dev_refresh_widgets">위젯 지금 갱신</string>
+    <string name="dev_refresh_widgets_desc">홈 화면 위젯을 다시 그려요</string>
+    <string name="dev_running">실행 중…</string>
+    <string name="dev_alerts_done">알림 %1$d개를 보냈어요</string>
+    <string name="dev_alerts_test">보낼 알림이 없어 시험 알림을 보냈어요</string>
+    <string name="dev_sync_updated">새로 받았어요. 새 공휴일 %1$d일</string>
+    <string name="dev_sync_unchanged">저장된 정보와 같아요</string>
+    <string name="dev_sync_invalid">형식이 맞지 않아 저장된 정보를 그대로 써요</string>
+    <string name="dev_sync_network">공휴일 정보를 새로 받지 못했어요. 저장된 정보로 보여드릴게요</string>
+    <string name="dev_widgets_done">위젯을 다시 그렸어요</string>
+</resources>

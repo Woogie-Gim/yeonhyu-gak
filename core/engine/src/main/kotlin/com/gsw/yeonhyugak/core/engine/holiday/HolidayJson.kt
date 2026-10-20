@@ -32,19 +32,21 @@ internal data class LunarYearDto(val seollal: String, val buddha: String, val ch
 @Serializable
 internal data class LunarTableDto(val schemaVersion: Int, val years: Map<String, LunarYearDto>)
 
+// 원격 JSON. kind 필수, 번들에 더할 날만 (SPEC 3장)
 @Serializable
-internal data class OverrideRemoveDto(val date: String, val name: String)
+internal data class RemoteHolidayDto(val date: String, val name: String, val kind: HolidayKind)
 
 @Serializable
-internal data class OverrideDto(
-    val schemaVersion: Int,
-    val add: List<HolidayDto> = emptyList(),
-    val remove: List<OverrideRemoveDto> = emptyList(),
-)
+internal data class RemoteHolidaysDto(val version: Int, val holidays: List<RemoteHolidayDto>)
 
 // 번들 확정 공휴일. 연도별 확정 여부
 data class HolidayBundle(val confirmedYears: Map<Int, List<Holiday>>) {
     fun isConfirmed(year: Int): Boolean = year in confirmedYears
+}
+
+// 원격 공휴일 파일. version은 데이터 개정 번호
+data class RemoteHolidays(val version: Int, val holidays: List<Holiday>) {
+    fun toOverrides(): HolidayOverrides = HolidayOverrides(add = holidays)
 }
 
 // 원격 덮어쓰기: 임시공휴일·선거일 추가, 취소된 날 삭제
@@ -94,13 +96,16 @@ object HolidayBundleCodec {
         return LunarTable(years)
     }
 
-    fun parseOverrides(text: String): HolidayOverrides {
-        val dto = decode<OverrideDto>(text)
-        checkSchema(dto.schemaVersion)
-        return HolidayOverrides(
-            add = dto.add.map { it.toHoliday(null, HolidaySource.REMOTE) },
-            remove = dto.remove.map { parseDate(it.date, null) to it.name }.toSet(),
-        )
+    // 규칙 하나라도 어기면 파일 전체 거부
+    fun parseRemote(text: String): RemoteHolidays {
+        val dto = decode<RemoteHolidaysDto>(text)
+        check(dto.version >= 1) { "version은 1 이상: ${dto.version}" }
+        val holidays = dto.holidays.map {
+            HolidayDto(it.date, it.name, it.kind).toHoliday(null, HolidaySource.REMOTE)
+        }
+        val dup = holidays.groupBy { it.date to it.name }.filterValues { it.size > 1 }.keys
+        check(dup.isEmpty()) { "원격 중복 공휴일: $dup" }
+        return RemoteHolidays(dto.version, holidays.sortedWith(compareBy({ it.date }, { it.name })))
     }
 
     private inline fun <reified T> decode(text: String): T = try {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 위젯 고르기 화면 -->
+    <string name="widget_next_label">다음 연휴 D-day</string>
+    <string name="widget_month_label">이번 달 연휴 달력</string>
+
+    <!-- 2×1 다음 연휴 -->
+    <string name="widget_next_title">다음 연휴까지</string>
+    <string name="widget_next_dday">D-%1$d</string>
+    <string name="widget_next_ongoing">지금 연휴 중이에요</string>
+    <string name="widget_next_none">남은 연휴가 없어요</string>
+    <string name="widget_next_named">%1$s · %2$d일</string>
+    <string name="widget_next_unnamed">%1$d일 연휴</string>
+
+    <!-- 4×2 이번 달 -->
+    <string name="widget_month_title">%1$d월</string>
+    <string name="widget_remaining">남은 연차 %1$s일</string>
+</resources>

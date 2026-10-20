@@ -16,9 +16,12 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -31,6 +34,9 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import com.gsw.yeonhyugak.R
 import com.gsw.yeonhyugak.core.ui.theme.YhTheme
 import com.gsw.yeonhyugak.core.ui.theme.yhThemeId
+import com.gsw.yeonhyugak.dev.DevMenu
+import com.gsw.yeonhyugak.feature.settings.SettingsLink
+import java.time.LocalDate
 
 const val APP_ROOT_TAG = "yh_root"
 
@@ -43,13 +49,60 @@ enum class YhTab(@param:StringRes val label: Int, @param:DrawableRes val icon: I
 }
 
 // 화면 내용은 호출한 쪽에서 넣는다 (테스트에서 ViewModel 주입)
+// devMenu는 디버그 빌드에서만 null이 아니다
 class YhScreens(
     val onboarding: @Composable (onDone: () -> Unit) -> Unit = {},
-    val calendar: @Composable (SnackbarHostState, openSettings: () -> Unit) -> Unit = { _, _ -> },
+    val calendar: @Composable (
+        SnackbarHostState,
+        openSettings: () -> Unit,
+        openShare: (year: Int) -> Unit,
+    ) -> Unit = { _, _, _ -> },
     val recommend: @Composable (openCalendar: () -> Unit) -> Unit = {},
     val leave: @Composable (SnackbarHostState, openRecommend: () -> Unit) -> Unit = { _, _ -> },
-    val settings: @Composable (SnackbarHostState, back: () -> Unit) -> Unit = { _, _ -> },
+    val settings: @Composable (
+        SnackbarHostState,
+        back: () -> Unit,
+        devMenu: SettingsLink?,
+    ) -> Unit = { _, _, _ -> },
+    val share: @Composable (year: Int, dismiss: () -> Unit) -> Unit = { _, _ -> },
+    val devMenu: DevMenu? = null,
 )
+
+// 탭 · 설정 · 개발자 메뉴 · 공유 시트. 회전해도 유지
+@Stable
+internal class AppNav(
+    tab: YhTab = YhTab.CALENDAR,
+    settingsOpen: Boolean = false,
+    devOpen: Boolean = false,
+    shareYear: Int? = null,
+) {
+    var tab by mutableStateOf(tab)
+    var settingsOpen by mutableStateOf(settingsOpen)
+    var devOpen by mutableStateOf(devOpen)
+    var shareYear by mutableStateOf(shareYear)
+
+    // 위젯·알림에서 열면 달력 탭으로
+    fun toCalendar() {
+        tab = YhTab.CALENDAR
+        settingsOpen = false
+        devOpen = false
+        shareYear = null
+    }
+
+    companion object {
+        val Saver = listSaver<AppNav, Any?>(
+            save = { listOf(it.tab.name, it.settingsOpen, it.devOpen, it.shareYear) },
+            restore = {
+                AppNav(
+                    YhTab.valueOf(it[0] as String),
+                    it[1] as Boolean,
+                    it[2] as Boolean,
+                    it[3] as Int?,
+                )
+            },
+        )
+    }
+}
 
 // onboardingDone: null = 읽는 중(빈 배경만, 깜빡임 방지) · false = 첫 실행 온보딩 · true = 탭
 @OptIn(ExperimentalComposeUiApi::class)
@@ -59,9 +112,12 @@ fun YhApp(
     modifier: Modifier = Modifier,
     onboardingDone: Boolean? = true,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    openDate: LocalDate? = null,
 ) {
-    var tab by rememberSaveable { mutableStateOf(YhTab.CALENDAR) }
-    var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    val nav = rememberSaveable(saver = AppNav.Saver) { AppNav() }
+    LaunchedEffect(openDate) {
+        if (openDate != null) nav.toCalendar()
+    }
     val themeId = YhTheme.spec.id
     val root = modifier
         .fillMaxSize()
@@ -80,36 +136,60 @@ fun YhApp(
             contentColor = YhTheme.colors.ink,
         ) { innerPadding ->
             Box(Modifier.padding(innerPadding).fillMaxSize()) {
-                screens.onboarding { tab = YhTab.RECOMMEND }
+                screens.onboarding { nav.tab = YhTab.RECOMMEND }
             }
         }
 
-        true -> Scaffold(
-            modifier = root,
-            containerColor = YhTheme.colors.background,
-            contentColor = YhTheme.colors.ink,
-            snackbarHost = { YhSnackbarHost(snackbarHostState) },
-            bottomBar = {
-                // 설정 화면에서는 탭을 숨긴다
-                if (!settingsOpen) YhBottomBar(tab) { tab = it }
-            },
-        ) { innerPadding ->
-            Box(Modifier.padding(innerPadding).fillMaxSize()) {
-                if (settingsOpen) {
-                    BackHandler { settingsOpen = false }
-                    screens.settings(snackbarHostState) { settingsOpen = false }
-                } else {
-                    when (tab) {
-                        YhTab.CALENDAR -> screens.calendar(snackbarHostState) {
-                            settingsOpen = true
-                        }
+        true -> MainScaffold(screens, nav, snackbarHostState, root)
+    }
+}
 
-                        YhTab.RECOMMEND -> screens.recommend { tab = YhTab.CALENDAR }
+@Composable
+private fun MainScaffold(
+    screens: YhScreens,
+    nav: AppNav,
+    snackbarHostState: SnackbarHostState,
+    modifier: Modifier,
+) {
+    Scaffold(
+        modifier = modifier,
+        containerColor = YhTheme.colors.background,
+        contentColor = YhTheme.colors.ink,
+        snackbarHost = { YhSnackbarHost(snackbarHostState) },
+        bottomBar = {
+            // 설정 화면에서는 탭을 숨긴다
+            if (!nav.settingsOpen) YhBottomBar(nav.tab) { nav.tab = it }
+        },
+    ) { innerPadding ->
+        Box(Modifier.padding(innerPadding).fillMaxSize()) {
+            MainContent(screens, nav, snackbarHostState)
+            nav.shareYear?.let { year -> screens.share(year) { nav.shareYear = null } }
+        }
+    }
+}
 
-                        YhTab.LEAVE -> screens.leave(snackbarHostState) { tab = YhTab.RECOMMEND }
-                    }
-                }
-            }
+@Composable
+private fun MainContent(screens: YhScreens, nav: AppNav, snackbarHostState: SnackbarHostState) {
+    val dev = screens.devMenu
+    val devLink = dev?.label()?.let { SettingsLink(it) { nav.devOpen = true } }
+    when {
+        nav.settingsOpen && nav.devOpen && dev != null -> dev.Screen { nav.devOpen = false }
+
+        nav.settingsOpen -> {
+            BackHandler { nav.settingsOpen = false }
+            screens.settings(snackbarHostState, { nav.settingsOpen = false }, devLink)
+        }
+
+        else -> when (nav.tab) {
+            YhTab.CALENDAR -> screens.calendar(
+                snackbarHostState,
+                { nav.settingsOpen = true },
+                { nav.shareYear = it },
+            )
+
+            YhTab.RECOMMEND -> screens.recommend { nav.tab = YhTab.CALENDAR }
+
+            YhTab.LEAVE -> screens.leave(snackbarHostState) { nav.tab = YhTab.RECOMMEND }
         }
     }
 }

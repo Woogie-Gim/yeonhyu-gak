@@ -1,0 +1,27 @@
+# 공유: 달력 공유 아이콘 → 카드 미리보기 → 스토리 → 공유하기 → 시스템 공유 시트
+appId: com.gsw.yeonhyugak.debug
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "onb_start"
+- tapOn:
+    id: "tab_calendar"
+- tapOn:
+    id: "cal_share"
+- assertVisible:
+    id: "share_card"
+- assertVisible: "메모와 입사일은 카드에 넣지 않아요"
+- tapOn:
+    id: "share_ratio_story"
+- scrollUntilVisible:
+    element:
+      id: "share_action"
+    direction: DOWN
+- tapOn:
+    id: "share_action"
+# 기기 안에서 만든 이미지로 안드로이드 공유 시트가 뜬다
+- assertVisible: "공유 카드 보내기"
+- back
+- assertVisible:
+    id: "share_card"

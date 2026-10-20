@@ -63,23 +63,39 @@ internal fun SoundRow(option: SoundOption, selected: Boolean, onSelect: (SoundMo
 }
 
 @Composable
-internal fun HapticRow(on: Boolean, onChange: (Boolean) -> Unit) {
+internal fun HapticRow(on: Boolean, onChange: (Boolean) -> Unit) = ToggleRow(
+    R.string.settings_haptic,
+    R.string.settings_haptic_desc,
+    on,
+    onChange,
+    SETTINGS_HAPTIC_TAG,
+)
+
+// 제목 + 한 줄 설명 + 스위치. 줄 전체가 토글
+@Composable
+internal fun ToggleRow(
+    @StringRes title: Int,
+    @StringRes desc: Int,
+    on: Boolean,
+    onChange: (Boolean) -> Unit,
+    tag: String,
+) {
     Row(
         Modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
             .toggleable(value = on, role = Role.Switch, onValueChange = onChange)
-            .testTag(SETTINGS_HAPTIC_TAG)
+            .testTag(tag)
             .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
             Text(
-                stringResource(R.string.settings_haptic),
+                stringResource(title),
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                stringResource(R.string.settings_haptic_desc),
+                stringResource(desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = YhTheme.colors.muted,
             )

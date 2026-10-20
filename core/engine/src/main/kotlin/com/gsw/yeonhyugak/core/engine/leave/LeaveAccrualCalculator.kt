@@ -50,6 +50,15 @@ object LeaveAccrualCalculator {
         )
     }
 
+    // 오늘 유효한 부여분 중 가장 먼저 소멸하는 날. 내 연차 화면·소멸 알림 공용
+    fun nextExpiry(hireDate: LocalDate, basis: LeaveBasis, today: LocalDate): LocalDate? =
+        when (val r = calculate(hireDate, today, basis)) {
+            is AccrualResult.Calculated ->
+                r.grants.filter { it.isValidOn(today) }.minOfOrNull { it.expiresOn }
+
+            AccrualResult.ManualInputRequired -> null
+        }
+
     // 근속 n년차 연차: 15 + (n-1)/2, 최대 25
     fun annualDays(serviceYears: Int): Int = minOf(
         MAX_DAYS,

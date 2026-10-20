@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.gsw.yeonhyugak.core.data.leave.LeaveRepository
 import com.gsw.yeonhyugak.core.data.prefs.HireInfo
 import com.gsw.yeonhyugak.core.data.prefs.UserPrefsRepository
-import com.gsw.yeonhyugak.core.engine.leave.AccrualResult
 import com.gsw.yeonhyugak.core.engine.leave.LeaveAccrualCalculator
 import com.gsw.yeonhyugak.core.engine.leave.LeaveLedger
 import com.gsw.yeonhyugak.core.engine.leave.LeaveType
@@ -98,12 +97,7 @@ class LeaveViewModel @Inject constructor(
 
     // 오늘 유효한 연차 중 가장 먼저 사라지는 날
     private fun expiryOf(hire: HireInfo): LocalDate? =
-        when (val r = LeaveAccrualCalculator.calculate(hire.hireDate, today, hire.basis)) {
-            is AccrualResult.Calculated ->
-                r.grants.filter { it.isValidOn(today) }.minOfOrNull { it.expiresOn }
-
-            AccrualResult.ManualInputRequired -> null
-        }
+        LeaveAccrualCalculator.nextExpiry(hire.hireDate, hire.basis, today)
 
     private companion object {
         const val STOP_MS = 5_000L

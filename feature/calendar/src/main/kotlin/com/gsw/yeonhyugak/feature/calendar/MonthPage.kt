@@ -76,6 +76,7 @@ internal fun MonthGridView(
     rowHeight: Dp,
     callbacks: GridCallbacks,
     modifier: Modifier = Modifier,
+    newHolidayDates: Set<LocalDate> = emptySet(),
 ) {
     val currentGrid by rememberUpdatedState(grid)
     val currentCallbacks by rememberUpdatedState(callbacks)
@@ -101,13 +102,15 @@ internal fun MonthGridView(
                     if (cell.inMonth) {
                         val date = cell.date
                         val selected = selection?.contains(date) == true
+                        val isNew = date in newHolidayDates && cell.isHoliday
                         val description =
-                            cellDescription(cell, date == today, date in memoDates, selected)
+                            cellDescription(cell, date == today, date in memoDates, selected, isNew)
                         DayCellView(
                             cell = cell,
                             isToday = date == today,
                             hasMemo = date in memoDates,
                             selected = selected,
+                            isNew = isNew,
                             modifier = cellModifier.cellSemantics(
                                 cell,
                                 description,

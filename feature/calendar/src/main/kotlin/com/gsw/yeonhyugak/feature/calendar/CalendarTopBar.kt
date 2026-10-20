@@ -37,7 +37,7 @@ import com.gsw.yeonhyugak.core.ui.theme.numeralText
 import java.time.LocalDate
 import java.time.YearMonth
 
-// 상단 바: 연도·월 제목 · 예상 배지 · 오늘 · 설정. 말풍선
+// 상단 바: 연도·월 제목 · 예상 배지 · 오늘 · 공유 · 설정. 말풍선
 @Composable
 internal fun TopBar(
     month: YearMonth,
@@ -46,6 +46,7 @@ internal fun TopBar(
     onExpected: () -> Unit,
     onToday: () -> Unit,
     onSettings: () -> Unit,
+    onShare: () -> Unit = {},
 ) {
     val colors = YhTheme.colors
     val fonts = YhTheme.fonts
@@ -84,6 +85,13 @@ internal fun TopBar(
             modifier = Modifier.heightIn(min = 48.dp).testTag(CALENDAR_TODAY_TAG),
         ) {
             Text(stringResource(R.string.cal_today), color = colors.todayText)
+        }
+        IconButton(onClick = onShare, modifier = Modifier.testTag(CALENDAR_SHARE_TAG)) {
+            Icon(
+                painterResource(CoreUiR.drawable.ic_share),
+                contentDescription = stringResource(R.string.cal_share),
+                tint = colors.ink,
+            )
         }
         IconButton(onClick = onSettings, modifier = Modifier.testTag(CALENDAR_SETTINGS_TAG)) {
             Icon(

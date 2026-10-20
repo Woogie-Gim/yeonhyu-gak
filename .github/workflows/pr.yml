@@ -41,6 +41,9 @@ jobs:
       - name: 나머지 단위 테스트
         run: ./gradlew testDebugUnitTest
 
+      - name: 릴리스 빌드 개발자 메뉴 미포함
+        run: ./gradlew :app:testReleaseUnitTest --tests "*DevMenuReleaseTest*"
+
       - name: 스크린샷 회귀
         run: ./gradlew verifyRoborazziDebug
 

@@ -16,12 +16,17 @@ fun AppRoot(
 ) {
     val done by viewModel.onboardingDone.collectAsStateWithLifecycle()
     val appearance by viewModel.appearance.collectAsStateWithLifecycle()
+    val openDate by viewModel.openDate.collectAsStateWithLifecycle()
     YhTheme(
         darkTheme = darkTheme,
         appearance = appearance ?: Appearance(),
         month = viewModel.month,
     ) {
         // 설정을 다 읽기 전에는 빈 배경 (테마 깜빡임 방지)
-        YhApp(screens = screens, onboardingDone = done?.takeIf { appearance != null })
+        YhApp(
+            screens = screens,
+            onboardingDone = done?.takeIf { appearance != null },
+            openDate = openDate,
+        )
     }
 }

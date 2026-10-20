@@ -41,4 +41,15 @@
     <string name="settings_sound_off_desc">효과음을 내지 않아요</string>
     <string name="settings_haptic">햅틱</string>
     <string name="settings_haptic_desc">연차를 지정하거나 드래그할 때 짧게 진동해요</string>
+
+    <!-- 알림 -->
+    <string name="settings_notify_section">알림</string>
+    <string name="settings_notify">연휴·연차 알림</string>
+    <string name="settings_notify_desc">담은 연휴 3주 전 · 연차 소멸 30일 전 · 새 공휴일이 생기면 알려드려요</string>
+    <string name="settings_notify_denied">알림 권한이 꺼져 있어요. 기기 설정에서 켜 주세요</string>
+
+    <!-- 공유 카드 -->
+    <string name="settings_share_section">공유 카드</string>
+    <string name="settings_share_qr">QR 코드 넣기</string>
+    <string name="settings_share_qr_desc">카드 아래에 앱 받는 QR 코드를 넣어요</string>
 </resources>

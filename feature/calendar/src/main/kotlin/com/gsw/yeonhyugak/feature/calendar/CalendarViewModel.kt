@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.gsw.yeonhyugak.core.data.holiday.HolidayRepository
 import com.gsw.yeonhyugak.core.data.leave.LeaveRepository
 import com.gsw.yeonhyugak.core.data.memo.MemoRepository
+import com.gsw.yeonhyugak.core.data.nav.OpenDateStore
 import com.gsw.yeonhyugak.core.data.plan.PlanPreview
 import com.gsw.yeonhyugak.core.data.plan.PlanPreviewStore
+import com.gsw.yeonhyugak.core.data.prefs.AlertPrefsRepository
 import com.gsw.yeonhyugak.core.data.prefs.UserPrefsRepository
 import com.gsw.yeonhyugak.core.engine.calendar.LeaveToggle
 import com.gsw.yeonhyugak.core.engine.calendar.MonthGrid
@@ -31,7 +33,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -49,6 +50,9 @@ sealed interface CalendarEvent {
     data object WeekendTip : CalendarEvent
 
     data class AnchorTip(val date: LocalDate) : CalendarEvent
+
+    // 첫 담기 직후 한 번: `연휴 3주 전에 알려드릴까요?`
+    data object AskNotify : CalendarEvent
 }
 
 // 시트에 띄운 날짜. 메모 내용은 시트에서만 쓴다
@@ -75,6 +79,8 @@ data class CalendarUiState(
     val rangeAnchor: LocalDate? = null,
     val sheet: DaySheetState? = null,
     val preview: PlanPreview? = null,
+    // 원격으로 새로 추가된 공휴일. N 배지
+    val newHolidayDates: Set<LocalDate> = emptySet(),
 ) {
     val isLoaded: Boolean get() = holidays != null
 
@@ -111,6 +117,8 @@ class CalendarViewModel @Inject constructor(
     private val memoRepo: MemoRepository,
     private val prefs: UserPrefsRepository,
     private val previewStore: PlanPreviewStore,
+    openDates: OpenDateStore,
+    alertPrefs: AlertPrefsRepository,
     clock: Clock,
 ) : ViewModel() {
     private val today = LocalDate.now(clock)
@@ -120,14 +128,17 @@ class CalendarViewModel @Inject constructor(
 
     val eventFlow: Flow<CalendarEvent> = events.receiveAsFlow()
 
+    // 위젯·알림에서 연 날짜 · 알림 동의
+    val links = CalendarLinks(openDates, alertPrefs, viewModelScope)
+
     val state: StateFlow<CalendarUiState> =
         combine(
-            flow { emit(holidayRepo.calendar()) },
+            holidayRepo.observe(),
             leaveRepo.observe(),
             memoRepo.observeDates(),
             combine(prefs.allowance, prefs.coachMarkShown, ::Pair),
-            combine(local, previewStore.preview, ::Pair),
-        ) { holidays, leaves, memoDates, (allowance, coachShown), (l, preview) ->
+            combine(local, previewStore.preview, alertPrefs.newHolidays(today), ::Triple),
+        ) { holidays, leaves, memoDates, (allowance, coachShown), (l, preview, newDays) ->
             CalendarUiState(
                 today = today,
                 holidays = holidays,
@@ -138,6 +149,7 @@ class CalendarViewModel @Inject constructor(
                 rangeAnchor = l.anchor,
                 sheet = l.sheet,
                 preview = preview,
+                newHolidayDates = newDays,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_MS), CalendarUiState(today))
 
@@ -230,6 +242,8 @@ class CalendarViewModel @Inject constructor(
         if (add && dates.isNotEmpty()) {
             editor.mark(dates, LeaveType.FULL)
             events.send(CalendarEvent.Changed(UiMessage(R.string.cal_done_add)))
+            // 알림 권한은 첫 실행이 아니라 첫 담기 직후에만 묻는다
+            if (links.shouldAskNotify()) events.send(CalendarEvent.AskNotify)
         }
     }
 

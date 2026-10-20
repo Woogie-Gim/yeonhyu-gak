@@ -103,6 +103,13 @@ class UserPrefsRepository @Inject constructor(private val store: DataStore<Prefe
         store.edit { it[COACH_MARK] = true }
     }
 
+    // 공유 카드 QR. 기본 켬
+    val shareQr: Flow<Boolean> = store.data.map { it[SHARE_QR] ?: true }
+
+    suspend fun setShareQr(on: Boolean) {
+        store.edit { it[SHARE_QR] = on }
+    }
+
     companion object {
         // SPEC 2장 스테퍼 기본값
         const val DEFAULT_ALLOWANCE = 15.0
@@ -115,6 +122,7 @@ class UserPrefsRepository @Inject constructor(private val store: DataStore<Prefe
         private val CHEER = stringPreferencesKey("theme_cheer_color")
         private val SOUND = stringPreferencesKey("sound_mode")
         private val HAPTIC = booleanPreferencesKey("haptic_on")
+        private val SHARE_QR = booleanPreferencesKey("share_qr_on")
     }
 }
 

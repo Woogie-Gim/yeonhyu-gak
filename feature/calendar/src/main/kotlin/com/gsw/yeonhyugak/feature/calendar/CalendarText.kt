@@ -41,6 +41,14 @@ internal fun dateLabel(date: LocalDate): String = stringResource(
     stringArrayResource(R.array.cal_weekday_full)[date.dayOfWeek.sundayIndex],
 )
 
+@Composable
+private fun leaveLabel(leave: LeaveType?): String? = when (leave) {
+    LeaveType.FULL -> stringResource(R.string.cal_a11y_full)
+    LeaveType.AM_HALF -> stringResource(R.string.cal_a11y_am)
+    LeaveType.PM_HALF -> stringResource(R.string.cal_a11y_pm)
+    null -> null
+}
+
 // TalkBack: "5월 2일 금요일 근무일" 형태
 @Composable
 internal fun cellDescription(
@@ -48,6 +56,7 @@ internal fun cellDescription(
     isToday: Boolean,
     hasMemo: Boolean,
     selected: Boolean,
+    isNew: Boolean = false,
 ): String {
     val parts = mutableListOf(dateLabel(cell.date))
     if (isToday) parts += stringResource(R.string.cal_a11y_today)
@@ -58,12 +67,8 @@ internal fun cellDescription(
         cell.isWorkday -> stringResource(R.string.cal_a11y_workday)
         else -> stringResource(R.string.cal_a11y_weekend)
     }
-    when (cell.leave) {
-        LeaveType.FULL -> parts += stringResource(R.string.cal_a11y_full)
-        LeaveType.AM_HALF -> parts += stringResource(R.string.cal_a11y_am)
-        LeaveType.PM_HALF -> parts += stringResource(R.string.cal_a11y_pm)
-        null -> Unit
-    }
+    leaveLabel(cell.leave)?.let { parts += it }
+    if (isNew) parts += stringResource(R.string.cal_a11y_new_holiday)
     if (cell.isPreview) parts += stringResource(R.string.cal_a11y_preview)
     cell.band?.let { parts += stringResource(R.string.cal_a11y_band, it.length) }
     if (hasMemo) parts += stringResource(R.string.cal_a11y_memo)

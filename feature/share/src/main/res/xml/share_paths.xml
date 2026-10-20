@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 공유 카드 PNG만 내보낸다 -->
+<paths>
+    <cache-path
+        name="share"
+        path="share/" />
+</paths>

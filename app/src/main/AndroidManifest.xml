@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 원격 공휴일 JSON 주 1회 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 알림은 WorkManager 지연 예약. 정확한 알람 권한은 쓰지 않는다 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".YhApplication"
         android:allowBackup="true"

@@ -8,7 +8,7 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
 import com.gsw.yeonhyugak.core.data.db.YhDatabase
 import com.gsw.yeonhyugak.core.data.holiday.HolidayOverrideSource
-import com.gsw.yeonhyugak.core.data.holiday.NoHolidayOverrides
+import com.gsw.yeonhyugak.core.data.holiday.StoredHolidayOverrides
 import com.gsw.yeonhyugak.core.engine.planner.Recommender
 import com.gsw.yeonhyugak.core.engine.planner.VacationPlanner
 import dagger.Binds
@@ -26,6 +26,11 @@ import kotlinx.coroutines.Dispatchers
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class IoDispatcher
+
+// 원격 공휴일 JSON 주소. :app이 BuildConfig로 공급
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RemoteHolidayUrl
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -55,7 +60,7 @@ object DataModule {
 @Module
 @InstallIn(SingletonComponent::class)
 interface HolidayModule {
-    // Phase 5에서 원격 구현으로 교체
+    // 저장된 원격 파일. 없으면 번들만
     @Binds
-    fun overrides(impl: NoHolidayOverrides): HolidayOverrideSource
+    fun overrides(impl: StoredHolidayOverrides): HolidayOverrideSource
 }
